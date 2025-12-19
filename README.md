@@ -15,6 +15,22 @@ Appen er lavet til at køre “server-only” på et simpelt lokalt webserver-se
 - **Print / Gem som PDF** med pæn opsætning
 - **Projekt**: indtast projektnavn/adresse (vises i toppen og på print)
 
+## Screenshots
+
+Nedenfor ses eksempler på brugen af appen.
+
+### Opret flyttekasse
+![Opret flyttekasse](docs/screenshots/flyttekasse_eksempel.png)
+
+### Indhold i flyttekasse
+![Indhold](docs/screenshots/indhold_eksempel.png)
+
+### Print / PDF
+![Print](docs/screenshots/print_eksempel.png)
+
+
+> **Note:** App'en kan også bruges på tablets og telefoner.
+
 ## Struktur
 
 ```
