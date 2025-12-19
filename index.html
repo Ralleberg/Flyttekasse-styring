@@ -1,0 +1,2255 @@
+<!doctype html>
+<html lang="da">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Flyttekasser</title>
+  <style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    :root{
+      --bg:#0b1220;
+      --panel:#0f1726;
+      --card:#111a2b;
+      --card2:#0f1726;
+      --text:#e9eefc;
+      --muted:#a8b3d8;
+      --line:#22304f;
+      --accent:#6ee7ff;
+      --accent2:#a78bfa;
+      --ok:#4ade80;
+      --bad:#fb7185;
+      --warn:#fbbf24;
+      --shadow: 0 10px 30px rgba(0,0,0,.25);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    html,body{min-height:100%}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 600px at 20% 0%, rgba(110,231,255,.14), transparent 60%),
+                  radial-gradient(1000px 500px at 90% 10%, rgba(167,139,250,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+    }
+    .app{display:grid; grid-template-columns: 290px 1fr; min-height:100vh; height:auto}
+    .sidebar{
+      background: rgba(15,23,38,.82);
+      border-right:1px solid rgba(255,255,255,.08);
+      backdrop-filter: blur(10px);
+      padding:16px;
+      display:flex; flex-direction:column; gap:14px;
+    }
+    .brand{display:flex; gap:12px; align-items:center}
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      display:grid;place-items:center;
+      background: linear-gradient(135deg, rgba(110,231,255,.16), rgba(167,139,250,.14));
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow: var(--shadow);
+      font-size:22px;
+    }
+    .brand h1{margin:0; font-size:16px; letter-spacing:.2px}
+    .brand p{margin:2px 0 0; color:var(--muted); font-size:12px}
+    .fileCard{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      padding:12px;
+      background: rgba(17,26,43,.55);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .fileRow{display:flex; justify-content:space-between; gap:8px; align-items:center}
+    .badge{
+      font-size:11px;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--muted);
+      background: rgba(15,23,38,.65);
+      white-space:nowrap;
+    }
+    .badge.ok{border-color: rgba(74,222,128,.35); color: rgba(74,222,128,.95); background: rgba(74,222,128,.08)}
+    .badge.warn{border-color: rgba(251,191,36,.35); color: rgba(251,191,36,.95); background: rgba(251,191,36,.08)}
+    .badge.bad{border-color: rgba(251,113,133,.35); color: rgba(251,113,133,.95); background: rgba(251,113,133,.08)}
+    .filePath{
+      font-family: var(--mono);
+      font-size:11px;
+      color: var(--muted);
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 240px;
+    }
+    .nav{display:flex; flex-direction:column; gap:8px}
+    .nav button{
+      text-align:left;
+      padding:12px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(17,26,43,.55);
+      color: var(--muted);
+      cursor:pointer;
+      font-weight:800;
+      letter-spacing:.1px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .nav button:hover{border-color: rgba(255,255,255,.20)}
+    .nav button.active{
+      color: var(--text);
+      border-color: rgba(110,231,255,.35);
+      background: linear-gradient(135deg, rgba(110,231,255,.14), rgba(167,139,250,.10));
+    }
+    .nav small{font-weight:700; color: var(--muted)}
+    .content{display:flex; flex-direction:column; min-width:0}
+    .topbar{
+      position:sticky; top:0;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background: rgba(11,18,32,.65);
+      backdrop-filter: blur(10px);
+      z-index: 5;
+    }
+    .topbar .left{display:flex; flex-direction:column; gap:2px}
+    .topTitle{font-weight:900; letter-spacing:.2px}
+    .topSub{color:var(--muted); font-size:12px}
+    .topbar .right{display:flex; gap:10px; align-items:center}
+    #btnToggleMenu{display:none}
+    @media (max-width: 920px){ #btnToggleMenu{display:inline-flex} }
+    .btn{
+      height:38px; padding:0 14px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: linear-gradient(135deg, rgba(110,231,255,.25), rgba(167,139,250,.18));
+      color:var(--text);
+      font-weight:800;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .btn:hover{border-color: rgba(255,255,255,.22)}
+    .btn.ghost{
+      background: rgba(15,23,38,.65);
+      font-weight:800;
+      color:var(--muted);
+    }
+    .btn.danger{
+      background: rgba(251,113,133,.12);
+      border-color: rgba(251,113,133,.28);
+      color: rgba(251,113,133,.95);
+    }
+    .btn:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+    }
+
+    .btn.sm{
+      height:30px;
+      padding:0 10px;
+      border-radius: 10px;
+      font-size:12px;
+      font-weight:900;
+    }
+    .btn.icon{
+      width:34px;
+      padding:0;
+      display:inline-grid;
+      place-items:center;
+    }
+    a{color: rgba(110,231,255,.95); text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    /* Modal */
+    .modalOverlay{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      place-items:center;
+      z-index: 9999;
+    }
+    .modalOverlay.show{display:grid}
+    .modalCard{
+      width:min(640px, 92vw);
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(17,26,43,.92);
+      box-shadow: 0 18px 55px rgba(0,0,0,.45);
+      padding:14px;
+    }
+    .modalHeader{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px}
+    .modalTitle{font-weight:900}
+    .modalBody{margin-top:10px}
+    .linkDanger{
+      background:transparent;
+      border:none;
+      padding:0;
+      color: rgba(255, 97, 124, .95);
+      font-weight: 900;
+      cursor:pointer;
+      text-decoration: underline;
+    }
+    .linkDanger:disabled{opacity:.45; cursor:not-allowed; text-decoration:none}
+
+    .main{padding:16px; overflow:auto}
+    .grid{display:grid; grid-template-columns: 1fr 1fr; gap:14px}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding:14px 14px;
+      min-width:0;
+    }
+    .card h2{margin:0 0 10px; font-size:16px}
+    .hint{color:var(--muted); font-size:12px; margin:4px 0 0}
+    .form{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .form3{grid-template-columns: 1fr 1fr 1fr}
+    .formFull{grid-template-columns: 1fr}
+    label{display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--muted); min-width:0}
+    input,select,textarea{
+      height:38px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(15,23,38,.85);
+      color:var(--text);
+      padding:0 10px;
+      outline:none;
+    }
+    textarea{height:92px; padding:10px; resize:vertical}
+    input:focus,select:focus,textarea:focus{border-color: rgba(110,231,255,.45); box-shadow:0 0 0 3px rgba(110,231,255,.12)}
+    .span2{grid-column: span 2}
+    .span3{grid-column: span 3}
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .msg{font-size:12px; color:var(--muted); margin-top:10px}
+    .msg.ok{color:var(--ok)}
+    .msg.bad{color:var(--bad)}
+    .msg.warn{color:var(--warn)}
+    .tableWrap{
+      margin-top:10px;
+      overflow:auto;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      background: rgba(15,23,38,.35);
+    }
+    table{border-collapse:collapse; width:100%; min-width:680px; font-size:12px}
+    th,td{padding:10px 10px; border-bottom:1px solid rgba(255,255,255,.06); vertical-align:top}
+    th{color:var(--muted); text-align:left; background: rgba(15,23,38,.55); position:sticky; top:0}
+    tr:hover td{background: rgba(110,231,255,.06)}
+    .pill{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--muted);
+      background: rgba(15,23,38,.55);
+      font-size:11px;
+      white-space:nowrap;
+    }
+    .kpi{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+    .divider{height:1px; background: rgba(255,255,255,.08); margin:12px 0}
+
+    /* Print */
+    .printOnly{display:none}
+    @media print{
+      /* Keep print clean but readable; do NOT affect on-screen colors (print only). */
+      @page{ margin: 12mm; }
+
+      body{background:#fff !important; color:#111827 !important}
+
+      .app{display:block; height:auto}
+      .sidebar,.topbar,.noPrint,.overlay{display:none !important}
+      .main{padding:0; margin:0}
+
+      /* Only the print card should appear */
+      #view-boxLookup .grid{display:block}
+      #view-boxLookup .grid > .card:first-child{display:none !important}
+      #printCard{
+        margin:0 !important;
+        padding:0 !important;
+        border:none !important;
+        box-shadow:none !important;
+        border-radius:0 !important;
+        background:#fff !important;
+      }
+      .printOnly{display:block !important}
+
+      /* Full-width table with wrapping */
+      #printCard .tableWrap{overflow:visible !important; border:1px solid #e5e7eb !important; background:#fff !important}
+      #printCard table{width:100% !important; min-width:0 !important; table-layout:fixed !important}
+      #printCard th{
+        background:#f3f4f6 !important;
+        color:#374151 !important;
+        position:static !important;
+      }
+      #printCard th, #printCard td{
+        border-bottom:1px solid #e5e7eb !important;
+        white-space:normal !important;
+        word-break:break-word !important;
+        overflow-wrap:anywhere !important;
+        hyphens:auto;
+      }
+      /* Hide action column in print, just in case */
+      #printCard .noPrint{display:none !important}
+    }
+
+    /* Mobile drawer */
+    .overlay{
+      display:none;
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      z-index: 40;
+    }
+    @media (max-width: 920px){
+      .app{grid-template-columns: 1fr}
+      .sidebar{
+        position:fixed;
+        top:0; left:0;
+        height:100vh;
+        width:min(320px, 86vw);
+        z-index: 50;
+        transform: translateX(-105%);
+        transition: transform .22s ease;
+        border-right:1px solid rgba(255,255,255,.10);
+      }
+      .sidebar.open{ transform: translateX(0); }
+      .overlay.show{ display:block; }
+      .topbar{ z-index: 30; }
+      .filePath{max-width: 70vw}
+      .main{ padding:14px; }
+    }
+    @media (max-width: 560px){
+      .topbar .right{ gap:8px; }
+      .btn{ padding:0 12px; }
+      table{ min-width: 520px; }
+    }
+
+    @media (max-width: 560px){
+      .grid{grid-template-columns: 1fr}
+      .form,.form3{grid-template-columns: 1fr}
+      .span2,.span3{grid-column:auto}
+      table{min-width:520px}
+    }
+  
+    body.menuOpen{overflow:hidden}
+
+
+
+    .brandSubtitle{opacity:.85; font-size:12px; margin-top:4px; line-height:1.2}
+
+    .printSub{opacity:.85; margin-top:4px}
+
+
+    .bigValue{font-size:18px; font-weight:900; margin-top:6px; word-break:break-word}
+
+    .hidden{display:none!important}
+
+
+    .linkTiny{margin-top:10px; width:100%; text-align:left; background:transparent; border:none; color:rgba(255,255,255,.78); font-weight:800; font-size:12px; padding:8px 10px; cursor:pointer; text-decoration: underline}
+    .linkTiny:hover{color:rgba(255,255,255,.95)}
+    
+
+
+
+
+    #viewProject .card:first-of-type{
+      margin-top: 18px;
+    }
+    #viewProject .viewHeader{
+      margin-bottom: 14px;
+    }
+    
+
+    /* Extra spacing after Active Project card to match design rhythm */
+    #projectInfoCard{
+      margin-bottom: 22px;
+    }
+
+
+
+
+
+    .projectTopRow{display:flex; justify-content:flex-start; margin: 6px 0 14px}
+    
+    .linkTinyTop:hover{color:rgba(255,255,255,.95)}
+    
+
+    .projectTopRow{
+      display:flex;
+      justify-content:center;
+      margin: 8px 0 16px;
+    }
+    .linkTinyTop{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.18);
+      color: #e9edf5;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 13px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .linkTinyTop:hover{
+      background: rgba(255,255,255,.12);
+    }
+
+
+    /* Hide stray menu toggle in content header */
+    .contentHeader button[aria-label="Menu"]{
+      display:none !important;
+    }
+    
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar noPrint">
+    <div class="brand">
+      <div class="logo">📦</div>
+      <div>
+        <h1>Flyttekasse app</h1>
+        <p><span id="projectSubtitle"></span></p>
+      </div>
+    </div>
+
+    <div class="fileCard">
+      <div class="fileRow">
+        <div style="font-weight:900">Datafil</div>
+        <span id="fileStatus" class="badge warn">starter…</span>
+      </div>
+      <div id="filePath" class="filePath">starter…</div>
+      <div class="row">
+        <button id="btnPickFile" class="btn">Vælg/åbn…</button>
+        <button id="btnSave" class="btn ghost" disabled>Gem</button>
+      </div>
+      <div class="row">
+        <button id="btnExport" class="btn ghost">Eksportér JSON</button>
+        <button id="btnImport" class="btn ghost">Importér JSON</button>
+        <input id="importFile" type="file" accept="application/json" style="display:none" />
+      </div>
+      <div class="hint">Tip: i Chrome/Edge kan “Gem” skrive direkte i filen. I Safari/Firefox bruges eksport/import.</div>
+    </div>
+
+    <nav class="nav">
+      <button data-view="boxes" class="active">1) Flyttekasse <small>Opret</small></button>
+      <button data-view="items">2) Indhold <small>Opret</small></button>
+      <button data-view="search">3) Søg <small>Varetekst</small></button>
+      <button data-view="boxLookup">4) Opslag/Print <small>Oversigt</small></button>
+      <button data-view="rooms">Rum <small>Administrér</small></button>
+    </nav>
+
+    <div style="margin-top:auto; color:var(--muted); font-size:12px">
+      <div class="pill"></div><div class="projectTopRow noPrint"><button id="btnEditProjectTop" class="linkTinyTop" type="button">Rediger projektnavn/adresse</button></div><div class="stats"><span class="pill">Autonr: <span id="nextBoxNr">—</span></div>
+      <div class="pill">Rum: <span id="roomsCount">0</span></div>
+      <div class="pill">Kasser: <span id="boxesCount">0</span></div>
+      <div class="pill">Varer: <span id="itemsCount">0</span></div>
+    </div>
+  </aside>
+  <div id="overlay" class="overlay noPrint" aria-hidden="true"></div>
+
+  <section class="content">
+    <header class="topbar noPrint">
+      <div class="left">
+        <div id="topTitle" class="topTitle">Flyttekasse</div>
+        <div id="topSub" class="topSub">Opret en ny flyttekasse med autonummerering.</div>
+      </div>
+      <div class="right">
+        <button id="btnToggleMenu" class="btn ghost" title="Menu" aria-label="Menu">☰</button>
+        </div>
+    </header>
+
+    <main class="main">
+      <!-- View: Boxes -->
+      
+
+
+<section id="viewProject" class="view" aria-hidden="true">
+  <div class="viewHeader">
+    <div>
+      <h1>Projekt</h1>
+      
+    </div>
+  </div>
+
+  <div id="projectSetupCard" class="card">
+    <div class="cardTitle">Indtast projektnavn / adresse</div>
+    <div class="form formFull">
+      <label>
+        Projektnavn (fx “Nørrebrogade 12, 2200 København N”)
+        <input id="projectNameInput" type="text" placeholder="Skriv projektnavn eller adresse…" />
+      </label>
+    </div>
+    <div class="row" style="justify-content:flex-end; margin-top:10px">
+      <button id="btnSaveProject" class="btn" type="button">Gem</button>
+    </div>
+    <div id="projectMsg" class="msg"></div>
+  </div>
+
+  <div id="projectInfoCard" class="card">
+    <div class="cardTitle">Aktivt projekt</div>
+    <div id="projectDisplayText" class="bigValue"></div>
+    <div class="hint" style="margin-top:6px">Du kan ændre dette via “Rediger projektnavn/adresse” i menuen.</div>
+  </div>
+</section>
+
+
+
+<section id="view-boxes" class="view">
+        <div class="grid">
+          <div class="card">
+            <h2>Opret ny flyttekasse</h2>
+            <div class="hint">Rum skal vælges, ellers kan kassen ikke oprettes.</div>
+
+            <div class="form">
+              <label>
+                Næste BoxNr
+                <input id="boxNrPreview" type="text" disabled />
+              </label>
+              <label>
+                Rum *
+                <select id="boxRoomSelect">
+                  <option value="">— vælg rum —</option>
+                </select>
+              </label>
+              <label class="span2">
+                Note (valgfrit)
+                <input id="boxNote" type="text" placeholder="Fx 'Skrøbeligt' eller 'Julepynt'" />
+              </label>
+              <label>
+                Oprettet (auto)
+                <input id="boxCreatedAt" type="text" disabled />
+              </label>
+              <div class="row" style="align-items:flex-end">
+                <button id="btnCreateBox" class="btn" disabled>Opret kasse</button>
+                <button id="btnGotoRooms" class="btn ghost">Opret rum…</button>
+              </div>
+            </div>
+
+            <div id="boxMsg" class="msg"></div>
+          </div>
+
+          <div class="card">
+            <h2>Seneste kasser</h2>
+            <div class="hint">Klik på en kasse for at gå til Opslag/Print.</div>
+            <div class="tableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>BoxNr</th>
+                    <th>Rum</th>
+                    <th>Oprettet</th>
+                    <th>Note</th>
+                    <th class="noPrint" style="width:110px; text-align:right">Handling</th>
+                  </tr>
+                </thead>
+                <tbody id="recentBoxesTbody">
+                  <tr><td colspan="5">Ingen kasser endnu.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Items -->
+      <section id="view-items" class="view" style="display:none">
+        <div class="grid">
+          <div class="card">
+            <h2>Tilføj indhold</h2>
+            <div class="hint">Tilføj en vare til en flyttekasse.</div>
+
+            <div class="form form3">
+              <label class="span3">
+                Vare *
+                <input id="itemName" type="text" placeholder="Fx 'Sko', 'Ledninger', 'Tallerkener'..." />
+              </label>
+
+              <label>
+                Flyttekasse *
+                <select id="itemBoxSelect">
+                  <option value="">— vælg kasse —</option>
+                </select>
+              </label>
+
+              <label>
+                Antal
+                <input id="itemQty" type="number" min="0" step="1" placeholder="Fx 1" / value="1">
+              </label>
+
+              <label>
+                Enhed
+                <select id="itemUnit">
+                  <option value="stk.">stk.</option>
+                  <option value="kg.">kg.</option>
+                  <option value="sæt">sæt</option>
+                  <option value="pk.">pk.</option>
+                </select>
+              </label>
+
+              <label class="span3">
+                Note (valgfrit)
+                <input id="itemNote" type="text" placeholder="Fx 'Str. 42' eller 'øverst i kassen'" />
+              </label>
+
+              <div class="row span3" style="justify-content:flex-end">
+                <button id="btnAddItem" class="btn">Tilføj</button>
+              </div>
+            </div>
+
+            <div id="itemMsg" class="msg"></div>
+          </div>
+
+          <div class="card">
+            <h2>Seneste indhold</h2>
+            <div class="hint">Viser de seneste 12 tilføjelser.</div>
+            <div class="tableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tid</th>
+                    <th>Vare</th>
+                    <th>BoxNr</th>
+                    <th>Antal</th>
+                    <th>Enhed</th>
+                    <th>Note</th>
+                    <th class="noPrint" style="width:110px; text-align:right">Handling</th>
+                  </tr>
+                </thead>
+                <tbody id="recentItemsTbody">
+                  <tr><td colspan="6">Ingen varer endnu.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Search -->
+      <section id="view-search" class="view" style="display:none">
+        <div class="grid">
+          <div class="card">
+            <h2>Søg efter vare</h2>
+            <div class="hint">Søg på tekst og se hvilke flyttekasser der indeholder varen.</div>
+
+            <div class="form formFull">
+              <label>
+                Søg (indeholder)
+                <input id="searchText" type="text" placeholder="Fx 'sko' eller 'kabel'" />
+              </label>
+              <div class="row" style="justify-content:flex-end">
+                <button id="btnSearch" class="btn">Søg</button>
+                <button id="btnClearSearch" class="btn ghost">Ryd</button>
+              </div>
+            </div>
+
+            <div id="searchMsg" class="msg"></div>
+          </div>
+
+          <div class="card">
+            <h2>Resultater</h2>
+            <div class="kpi">
+              <span class="pill">Matchende varer: <b id="kpiMatches">0</b></span>
+              <span class="pill">Kasser i resultat: <b id="kpiBoxes">0</b></span>
+            </div>
+            <div class="divider"></div>
+            <div class="tableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>BoxNr</th>
+                    <th>Rum</th>
+                    <th>Matchende varer (eksempler)</th>
+                  </tr>
+                </thead>
+                <tbody id="searchResultsTbody">
+                  <tr><td colspan="3">Søg for at se resultater.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Box lookup / print -->
+      <section id="view-boxLookup" class="view" style="display:none">
+        <div class="grid">
+          <div class="card">
+            <h2>Slå flyttekasse op</h2>
+            <div class="hint">Vælg en kasse og se indholdet. Brug Print/PDF for et pænt ark.</div>
+
+            <div class="form">
+              <label>
+                Vælg kasse
+                <select id="lookupBoxSelect">
+                  <option value="">— vælg kasse —</option>
+                </select>
+              </label>
+              <label>
+                Eller indtast BoxNr
+                <input id="lookupBoxNr" type="number" min="1" placeholder="Fx 12" />
+              </label>
+
+              <div class="row span2" style="justify-content:flex-end; align-items:flex-end">
+                <button id="btnLookup" class="btn">Vis</button>
+                <button id="btnPrint" class="btn ghost" disabled>Print / Gem som PDF</button>
+              </div>
+            </div>
+
+            <div id="lookupMsg" class="msg"></div>
+          </div>
+
+          <div class="card" id="printCard">
+            <div class="printOnly" style="margin-bottom:10px">
+              <div style="font-weight:900; font-size:16px">Flyttekasse – Indhold</div>
+              <div style="color:var(--muted); font-size:12px">Udskrift genereret: <span id="printGeneratedAt"></span></div>
+            </div>
+
+            <h2 id="boxHeader">Ingen kasse valgt</h2>
+            <div class="kpi">
+              <span class="pill">Rum: <b id="boxRoom">—</b></span>
+              <span class="pill">Oprettet: <b id="boxCreated">—</b></span>
+              <span class="pill">Note: <b id="boxNoteOut">—</b></span>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="tableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Vare</th>
+                    <th>Antal</th>
+                    <th>Enhed</th>
+                    <th>Note</th>
+                    <th class="noPrint" style="width:110px; text-align:right">Handling</th>
+                  </tr>
+                </thead>
+                <tbody id="boxItemsTbody">
+                  <tr><td colspan="5">Vælg en kasse for at se indholdet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="hint" style="margin-top:10px">
+              Tip: I print-dialogen kan du vælge “Gem som PDF”.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- View: Rooms -->
+      <section id="view-rooms" class="view" style="display:none">
+        <div class="grid">
+          <div class="card">
+            <h2>Opret rum</h2>
+            <div class="hint">Rum bruges i dropdown, når du opretter flyttekasser.</div>
+
+            <div class="form">
+              <label class="span2">
+                Rumnavn *
+                <input id="roomName" type="text" placeholder="Fx 'Køkken', 'Stue', 'Soveværelse'..." />
+              </label>
+              <div class="row span2" style="justify-content:flex-end; align-items:flex-end">
+                <button id="btnAddRoom" class="btn">Tilføj rum</button>
+              </div>
+            </div>
+
+            <div id="roomMsg" class="msg"></div>
+          </div>
+
+          <div class="card">
+            <h2>Rum</h2>
+            <div class="hint">Du kan slette rum (hvis det ikke bruges af en kasse).</div>
+
+            <div class="tableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rum</th>
+                    <th>Bruges i kasser</th>
+                    <th class="noPrint" style="text-align:right; width:190px">Handling</th>
+                  </tr>
+                </thead>
+                <tbody id="roomsTbody">
+                  <tr><td colspan="3">Ingen rum endnu.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </section>
+</div>
+
+
+<div id="editModal" class="modalOverlay noPrint" aria-hidden="true">
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+    <div class="modalHeader">
+      <div>
+        <div id="editModalTitle" class="modalTitle">Rediger vare</div>
+        <div class="hint">Ændr felter og gem. (Gælder kun denne varepost)</div>
+      </div>
+      <button id="btnCloseEdit" class="btn ghost icon" title="Luk" aria-label="Luk" type="button">✕</button>
+    </div>
+
+    <div class="modalBody">
+      <div class="form form3">
+        <label class="span3">
+          Vare *
+          <input id="editItemName" type="text" />
+        </label>
+        <label>
+          Antal
+          <input id="editItemQty" type="number" min="0" step="1" />
+        </label>
+        <label>
+          Enhed
+          <select id="editItemUnit">
+            <option value="stk.">stk.</option>
+            <option value="kg.">kg.</option>
+            <option value="sæt">sæt</option>
+            <option value="pk.">pk.</option>
+          </select>
+        </label>
+        <label class="span3">
+          Note
+          <input id="editItemNote" type="text" />
+        </label>
+      </div>
+
+      <div class="row" style="justify-content:space-between; align-items:center; margin-top:12px">
+        <button id="btnDeleteItem" class="linkDanger" type="button">Slet</button>
+        <button id="btnSaveItem" class="btn" type="button">Gem ændringer</button>
+      </div>
+      <div id="editMsg" class="msg"></div>
+    </div>
+  </div>
+</div>
+
+
+
+<div id="roomModal" class="modalOverlay noPrint" aria-hidden="true">
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="roomModalTitle">
+    <div class="modalHeader">
+      <div>
+        <div id="roomModalTitle" class="modalTitle">Rediger rum</div>
+        <div class="hint">Skift navn og gem. Sletning er kun muligt hvis rummet ikke bruges.</div>
+      </div>
+      <button id="btnCloseRoomModal" class="btn ghost icon" title="Luk" aria-label="Luk" type="button">✕</button>
+    </div>
+    <div class="modalBody">
+      <div class="form formFull">
+        <label>
+          Rumnavn *
+          <input id="editRoomName" type="text" />
+        </label>
+      </div>
+      <div class="row" style="justify-content:space-between; align-items:center; margin-top:12px">
+        <button id="btnDeleteRoomModal" class="linkDanger" type="button">Slet</button>
+        <button id="btnSaveRoomModal" class="btn" type="button">Gem</button>
+      </div>
+      <div id="roomEditMsg" class="msg"></div>
+    </div>
+  </div>
+</div>
+
+
+<div id="boxModal" class="modalOverlay noPrint" aria-hidden="true">
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="boxModalTitle">
+    <div class="modalHeader">
+      <div>
+        <div id="boxModalTitle" class="modalTitle">Rediger flyttekasse</div>
+        <div class="hint">Skift rum/note. Sletning sletter også alle varer i kassen.</div>
+      </div>
+      <button id="btnCloseBoxModal" class="btn ghost icon" title="Luk" aria-label="Luk" type="button">✕</button>
+    </div>
+    <div class="modalBody">
+      <div class="kpi" style="margin-top:0">
+        <span class="pill">BoxNr: <b id="editBoxNrLabel">—</b></span>
+      </div>
+      <div class="form">
+        <label>
+          Rum *
+          <select id="editBoxRoom">
+            <option value="">— vælg rum —</option>
+          </select>
+        </label>
+        <label>
+          Note
+          <input id="editBoxNote" type="text" />
+        </label>
+      </div>
+      <div class="row" style="justify-content:space-between; align-items:center; margin-top:12px">
+        <button id="btnDeleteBoxModal" class="linkDanger" type="button">Slet</button>
+        <button id="btnSaveBoxModal" class="btn" type="button">Gem</button>
+      </div>
+      <div id="boxEditMsg" class="msg"></div>
+    </div>
+  </div>
+</div>
+
+
+
+<div id="projectModal" class="modalOverlay noPrint" aria-hidden="true">
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
+    <div class="modalHeader">
+      <div>
+        <div id="projectModalTitle" class="modalTitle">Rediger projektnavn / adresse</div>
+        <div class="hint">Gem ændringerne, så opdateres toppen og print/PDF automatisk.</div>
+      </div>
+      <button id="btnCloseProjectModal" class="btn ghost icon" title="Luk" aria-label="Luk" type="button">✕</button>
+    </div>
+    <div class="modalBody">
+      <div class="form formFull">
+        <label>
+          Projektnavn / adresse
+          <input id="editProjectName" type="text" />
+        </label>
+      </div>
+      <div class="row" style="justify-content:flex-end; margin-top:12px; gap:10px">
+        <button id="btnCancelProjectModal" class="btn ghost" type="button">Annuller</button>
+        <button id="btnSaveProjectModal" class="btn" type="button">Gem</button>
+      </div>
+      <div id="projectEditMsg" class="msg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* All comments are intentionally in English per user preference. */
+
+/**
+ * Offline single-file app.
+ * Storage model: { version, rooms[], boxes[], items[] }
+ * Persistence:
+ *  - Preferred: File System Access API (Chromium browsers): open/save directly to a JSON file.
+ *  - Fallback: Export JSON (download) + Import JSON (file input).
+ *
+ * NOTE: Browsers do not allow choosing arbitrary "paths" from JS.
+ * Instead, we use a file picker prompt (open/save) where the user chooses a location.
+ */
+
+const APP = {
+  version: 1,
+  data: {
+    version: 1,
+    rooms: [],
+    boxes: [],
+    items: []
+  },
+  fileHandle: null,
+  fileNameHint: "flyttekasser-data.json",
+  views: [
+    { id:"boxes", title:"Flyttekasse", sub:"Opret en ny flyttekasse med autonummerering." },
+    { id:"items", title:"Indhold", sub:"Tilføj varer til en flyttekasse." },
+    { id:"search", title:"Søg", sub:"Søg efter varetekst og se matchende kasser." },
+    { id:"boxLookup", title:"Opslag/Print", sub:"Slå kassen op og print/gem som PDF." },
+    { id:"rooms", title:"Rum", sub:"Opret og administrér rum." },
+  ]
+};
+
+const $ = (id) => document.getElementById(id);
+
+init();
+
+async function init(){
+  try{
+    setFileStatus("starter…", "warn");
+    setFilePathLabel("loader…");
+    wireNav();
+    wireFileButtons();
+    wireForms();
+    await loadFromServer();
+    renderProjectTitle();
+    updateProjectUI();
+    renderAll();
+    setBoxCreatedNow();
+  } catch (e){
+    console.error(e);
+    try{
+      setFileStatus("fejl", "bad");
+      setFilePathLabel(String(e?.message || e));
+    }catch{}
+  }
+}
+
+function wireNav(){
+  const sidebar = document.querySelector(".sidebar");
+  const overlay = $("overlay");
+  const toggleBtn = $("btnToggleMenu");
+
+  function openMenu(){
+    if (sidebar) sidebar.classList.add("open");
+    if (overlay){ overlay.classList.add("show"); overlay.setAttribute("aria-hidden","false"); }
+    document.body.classList.add("menuOpen");
+  }
+  function closeMenu(){
+    if (sidebar) sidebar.classList.remove("open");
+    if (overlay){ overlay.classList.remove("show"); overlay.setAttribute("aria-hidden","true"); }
+    document.body.classList.remove("menuOpen");
+  }
+  function toggleMenu(){
+    const isOpen = sidebar && sidebar.classList.contains("open");
+    if (isOpen) closeMenu(); else openMenu();
+  }
+
+  if (toggleBtn){
+    toggleBtn.addEventListener("click", toggleMenu);
+    // iOS: make sure it also reacts on touch
+    toggleBtn.addEventListener("touchend", (e) => { e.preventDefault(); toggleMenu(); });
+  }
+  if (overlay){
+    overlay.addEventListener("click", closeMenu);
+    overlay.addEventListener("touchend", (e) => { e.preventDefault(); closeMenu(); });
+  }
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
+
+  const buttons = document.querySelectorAll(".nav button");
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      buttons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      showView(btn.dataset.view);
+      closeMenu(); // close sidebar on mobile after navigation
+    });
+  });
+}
+
+
+function toggleMenu(){
+  const sb = document.querySelector(".sidebar");
+  const ov = $("overlay");
+  const isOpen = sb.classList.toggle("open");
+  ov.classList.toggle("show", isOpen);
+  ov.setAttribute("aria-hidden", isOpen ? "false" : "true");
+}
+function closeMenu(){
+  const sb = document.querySelector(".sidebar");
+  const ov = $("overlay");
+  sb.classList.remove("open");
+  ov.classList.remove("show");
+  ov.setAttribute("aria-hidden", "true");
+}
+
+function showView(viewId){
+  APP.views.forEach(v => {
+    const el = $("view-" + v.id);
+    if (el) el.style.display = (v.id === viewId) ? "" : "none";
+  });
+  const v = APP.views.find(x => x.id === viewId);
+  if (v){
+    $("topTitle").textContent = v.title;
+    $("topSub").textContent = v.sub;
+  }
+  // Refresh relevant dropdowns when switching
+  renderSelects();
+  if (viewId === "boxLookup") {
+    $("printGeneratedAt").textContent = new Date().toLocaleString();
+  }
+}
+
+function wireFileButtons(){
+  // Server-only mode: no file picker; keep export/import for backups.
+  const pick = $("btnPickFile");
+  const save = $("btnSave");
+  if (pick){
+    pick.disabled = true;
+    pick.addEventListener("click", () => alert("Server-mode: data gemmes automatisk i data.json via MAMP."));
+  }
+  if (save){
+    save.disabled = true;
+    save.addEventListener("click", () => alert("Server-mode: der gemmes automatisk. Brug eksport hvis du vil lave backup."));
+  }
+
+  $("btnExport").addEventListener("click", exportJsonDownload);
+  $("btnImport").addEventListener("click", () => $("importFile").click());
+  $("importFile").addEventListener("change", importJsonFromFile);
+
+  // Status label in sidebar
+  setFileStatus("server", "ok");
+  if ($("filePath")) $("filePath").textContent = "data.json (server)";
+}
+
+
+window.addEventListener("resize", () => {
+  if (!window.matchMedia("(max-width: 920px)").matches){
+    closeMenu();
+  }
+});
+
+function wireForms(){
+  $("btnGotoRooms").addEventListener("click", () => {
+    document.querySelector('.nav button[data-view="rooms"]').click();
+  });
+
+  $("boxRoomSelect").addEventListener("change", () => validateCreateBox());
+  $("btnCreateBox").addEventListener("click", createBox);
+
+  $("btnAddRoom").addEventListener("click", addRoom);
+
+  $("btnAddItem").addEventListener("click", addItem);
+
+  $("btnSearch").addEventListener("click", runSearch);
+  $("btnClearSearch").addEventListener("click", () => {
+    $("searchText").value = "";
+    $("searchResultsTbody").innerHTML = `<tr><td colspan="3">Søg for at se resultater.</td></tr>`;
+    $("kpiMatches").textContent = "0";
+    $("kpiBoxes").textContent = "0";
+    msg("searchMsg", "");
+  });
+
+  $("btnLookup").addEventListener("click", () => {
+    const fromSelect = $("lookupBoxSelect").value;
+    const fromInput = $("lookupBoxNr").value;
+    const n = fromSelect ? parseInt(fromSelect, 10) : parseInt(fromInput, 10);
+    renderBoxLookup(Number.isFinite(n) ? n : null);
+  });
+
+  $("lookupBoxSelect").addEventListener("change", () => {
+    const v = $("lookupBoxSelect").value;
+    $("lookupBoxNr").value = v ? v : "";
+  });
+
+  $("btnPrint").addEventListener("click", () => window.print());
+  // Project settings
+  if ($("btnEditProjectInline")) $("btnEditProjectInline").addEventListener("click", openProjectModal);
+  if ($("btnEditProjectTop")) $("btnEditProjectTop").addEventListener("click", openProjectModal);
+  if ($("btnCloseProjectModal")) $("btnCloseProjectModal").addEventListener("click", closeProjectModal);
+  if ($("btnCancelProjectModal")) $("btnCancelProjectModal").addEventListener("click", closeProjectModal);
+  if ($("btnSaveProjectModal")) $("btnSaveProjectModal").addEventListener("click", saveProjectModal);
+
+  if ($("btnEditProject")) $("btnEditProject").addEventListener("click", () => {
+    if ($("projectNameInput")) $("projectNameInput").value = (APP.data.projectName || "");
+    if ($("projectEditCard")) $("projectEditCard").classList.remove("hidden");
+    if ($("projectDisplayCard")) $("projectDisplayCard").classList.add("hidden");
+    msg("projectMsg", "");
+    $("projectNameInput") && $("projectNameInput").focus();
+  });
+  if ($("btnCancelProject")) $("btnCancelProject").addEventListener("click", () => {
+    msg("projectMsg", "");
+    updateProjectUI();
+  });
+
+  if ($("btnSaveProject")) $("btnSaveProject").addEventListener("click", () => {
+    APP.data.projectName = ($("projectNameInput").value || "").trim();
+    queueServerSave();
+    renderProjectTitle();
+  updateProjectUI();
+    msg("projectMsg", "Gemt.", "ok");
+    // Hide edit card after saving
+    updateProjectUI();
+  });
+  // Explicit modal save/delete bindings (robust)
+  $("btnSaveItem").onclick = () => saveEditedItem(); // closes modal inside
+  $("btnDeleteItem").onclick = () => {
+    if (!EDITING_ITEM_ID) return;
+    const it = APP.data.items.find(x => x.id === EDITING_ITEM_ID);
+    if (!it) return closeEditModal();
+    if (!confirm(`Er du sikker på at du vil slette varen “${it.name}”?`)) return;
+    deleteItemById(EDITING_ITEM_ID, it.boxNr);
+    closeEditModal();
+  };
+
+  $("btnSaveBoxModal").onclick = () => saveBoxModal(); // closes modal inside
+  $("btnDeleteBoxModal").onclick = () => deleteBoxModal(); // includes confirm inside handler
+  $("btnSaveRoomModal").onclick = () => saveRoomModal(); // closes modal inside
+  $("btnDeleteRoomModal").onclick = () => deleteRoomModal(); // includes confirm inside handler
+
+
+  // Edit modal wiring
+  $("btnCloseEdit").addEventListener("click", closeEditModal);
+  $("editModal").addEventListener("click", (e) => { if (e.target === $("editModal")) closeEditModal(); });
+  $("btnSaveItem").addEventListener("click", saveEditedItem);
+  $("btnDeleteItem").addEventListener("click", () => {
+    if (!EDITING_ITEM_ID) return;
+    const it = APP.data.items.find(x => x.id === EDITING_ITEM_ID);
+    if (!it) return closeEditModal();
+    if (!confirm(`Er du sikker på at du vil slette varen “${it.name}”?`)) return;
+    deleteItemById(EDITING_ITEM_ID, it.boxNr);
+    closeEditModal();
+  });
+}
+
+function setBoxCreatedNow(){
+  $("boxCreatedAt").value = new Date().toLocaleString();
+}
+
+function nextBoxNr(){
+  const maxNr = APP.data.boxes.reduce((m,b)=> Math.max(m, b.boxNr||0), 0);
+  return maxNr + 1;
+}
+
+function normalizeName(s){
+  return (s||"").trim().replace(/\s+/g, " ");
+}
+
+function validateCreateBox(){
+  const roomId = $("boxRoomSelect").value;
+  $("btnCreateBox").disabled = !roomId;
+}
+
+function createBox(){
+  msg("boxMsg", "");
+  const roomId = $("boxRoomSelect").value;
+  const note = normalizeName($("boxNote").value);
+
+  if (!roomId){
+    msg("boxMsg", "Vælg et rum først.", "bad");
+    return;
+  }
+  const room = APP.data.rooms.find(r => r.id === roomId);
+  if (!room){
+    msg("boxMsg", "Ugyldigt rum. Opret et rum først.", "bad");
+    return;
+  }
+
+  const boxNr = nextBoxNr();
+  const createdAt = new Date().toISOString();
+
+  APP.data.boxes.push({
+    id: cryptoId(),
+    boxNr,
+    roomId,
+    createdAt,
+    note
+  });
+  queueServerSave();
+
+  $("boxNote").value = "";
+  $("boxRoomSelect").value = "";
+  setBoxCreatedNow();
+  validateCreateBox();
+
+  msg("boxMsg", `Kasse #${boxNr} oprettet (${room.name}).`, "ok");
+  renderAll();
+  // Optional: prefill "Indhold" + "Opslag"
+  $("itemBoxSelect").value = String(boxNr);
+  $("lookupBoxSelect").value = String(boxNr);
+  $("lookupBoxNr").value = String(boxNr);
+}
+
+function addRoom(){
+  msg("roomMsg", "");
+  const name = normalizeName($("roomName").value);
+  if (!name){
+    msg("roomMsg", "Udfyld rumnavn.", "bad");
+    return;
+  }
+  const exists = APP.data.rooms.some(r => r.name.toLowerCase() === name.toLowerCase());
+  if (exists){
+    msg("roomMsg", "Rummet findes allerede.", "warn");
+    return;
+  }
+  APP.data.rooms.push({ id: cryptoId(), name });
+  queueServerSave();
+  $("roomName").value = "";
+  msg("roomMsg", `Rum tilføjet: ${name}`, "ok");
+  renderAll();
+}
+
+function deleteRoom(roomId){
+  const used = APP.data.boxes.some(b => b.roomId === roomId);
+  if (used){
+    msg("roomMsg", "Kan ikke slette: rummet bruges af mindst én kasse.", "bad");
+    return;
+  }
+  APP.data.rooms = APP.data.rooms.filter(r => r.id !== roomId);
+  queueServerSave();
+  msg("roomMsg", "Rum slettet.", "ok");
+  renderAll();
+}
+
+function addItem(){
+  msg("itemMsg", "");
+  const name = normalizeName($("itemName").value);
+  const boxNr = parseInt($("itemBoxSelect").value, 10);
+  const qtyRaw = $("itemQty").value;
+  const qty = qtyRaw === "" ? "" : parseFloat(qtyRaw);
+  const unit = $("itemUnit").value;
+  const note = normalizeName($("itemNote").value);
+
+  if (!name){
+    msg("itemMsg", "Udfyld Vare.", "bad");
+    return;
+  }
+  if (!Number.isFinite(boxNr) || boxNr <= 0){
+    msg("itemMsg", "Vælg en flyttekasse.", "bad");
+    return;
+  }
+  const box = APP.data.boxes.find(b => b.boxNr === boxNr);
+  if (!box){
+    msg("itemMsg", "Kassen findes ikke. Opret den først.", "bad");
+    return;
+  }
+
+  APP.data.items.push({
+    id: cryptoId(),
+    boxNr,
+    name,
+    qty,
+    unit,
+    note,
+    createdAt: new Date().toISOString()
+  });
+  queueServerSave();
+
+  $("itemName").value = "";
+  $("itemQty").value = "1";
+  $("itemNote").value = "";
+  $("itemName").focus();
+
+  msg("itemMsg", `Tilføjet: “${name}” → kasse #${boxNr}.`, "ok");
+  renderAll();
+}
+
+function runSearch(){
+  msg("searchMsg", "");
+  const q = normalizeName($("searchText").value).toLowerCase();
+  if (!q){
+    msg("searchMsg", "Skriv noget at søge efter.", "warn");
+    return;
+  }
+
+  const matches = APP.data.items.filter(it => it.name.toLowerCase().includes(q));
+  const boxToExamples = new Map(); // boxNr -> Set(example names)
+  for (const it of matches){
+    if (!boxToExamples.has(it.boxNr)) boxToExamples.set(it.boxNr, new Set());
+    const s = boxToExamples.get(it.boxNr);
+    if (s.size < 4) s.add(it.name);
+  }
+
+  const boxNrs = [...boxToExamples.keys()].sort((a,b)=>a-b);
+  $("kpiMatches").textContent = String(matches.length);
+  $("kpiBoxes").textContent = String(boxNrs.length);
+
+  if (matches.length === 0){
+    $("searchResultsTbody").innerHTML = `<tr><td colspan="3">Ingen resultater.</td></tr>`;
+    msg("searchMsg", `Ingen match på “${escapeHtml(q)}”.`, "warn");
+    return;
+  }
+
+  const rowsHtml = boxNrs.map(nr => {
+    const box = APP.data.boxes.find(b => b.boxNr === nr);
+    const roomName = roomNameById(box?.roomId);
+    const examples = [...boxToExamples.get(nr)].join(", ");
+    return `<tr>
+      <td><a href="#" data-jump-box="${nr}">#${nr}</a></td>
+      <td>${escapeHtml(roomName || "—")}</td>
+      <td>${escapeHtml(examples)}</td>
+    </tr>`;
+  }).join("");
+
+  $("searchResultsTbody").innerHTML = rowsHtml;
+  $("searchResultsTbody").querySelectorAll("a[data-jump-box]").forEach(a => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      const nr = parseInt(a.dataset.jumpBox, 10);
+      jumpToBox(nr);
+    });
+  });
+
+  msg("searchMsg", `Fandt ${matches.length} vare(r) i ${boxNrs.length} kasse(r).`, "ok");
+}
+
+function jumpToBox(boxNr){
+  document.querySelector('.nav button[data-view="boxLookup"]').click();
+  $("lookupBoxSelect").value = String(boxNr);
+  $("lookupBoxNr").value = String(boxNr);
+  renderBoxLookup(boxNr);
+}
+
+function renderBoxLookup(boxNr){
+  msg("lookupMsg", "");
+  $("btnPrint").disabled = true;
+
+  if (!Number.isFinite(boxNr) || boxNr <= 0){
+    $("boxHeader").textContent = "Ingen kasse valgt";
+    $("boxRoom").textContent = "—";
+    $("boxCreated").textContent = "—";
+    $("boxNoteOut").textContent = "—";
+    $("boxItemsTbody").innerHTML = `<tr><td colspan="5">Vælg en kasse for at se indholdet.</td></tr>`;
+    msg("lookupMsg", "Vælg eller indtast et BoxNr.", "warn");
+    return;
+  }
+
+  const box = APP.data.boxes.find(b => b.boxNr === boxNr);
+  if (!box){
+    msg("lookupMsg", `Kasse #${boxNr} findes ikke.`, "bad");
+    $("boxItemsTbody").innerHTML = `<tr><td colspan="5">Ingen data.</td></tr>`;
+    return;
+  }
+
+  const roomName = roomNameById(box.roomId) || "—";
+  const created = formatDate(box.createdAt);
+  const note = box.note ? box.note : "—";
+
+  $("boxHeader").textContent = `Flyttekasse #${boxNr}`;
+  $("boxRoom").textContent = roomName;
+  $("boxCreated").textContent = created;
+  $("boxNoteOut").textContent = note;
+  $("printGeneratedAt").textContent = new Date().toLocaleString();
+
+  const items = APP.data.items
+    .filter(it => it.boxNr === boxNr)
+    .sort((a,b)=> (b.createdAt||"").localeCompare(a.createdAt||""));
+
+  if (items.length === 0){
+    $("boxItemsTbody").innerHTML = `<tr><td colspan="5">Ingen indhold i denne kasse.</td></tr>`;
+  } else {
+    $("boxItemsTbody").innerHTML = items.map(it => `
+      <tr>
+        <td style="font-weight:900">${escapeHtml(it.name)}</td>
+        <td>${escapeHtml(it.qty === "" ? "" : String(it.qty))}</td>
+        <td>${escapeHtml(it.unit || "")}</td>
+        <td>${escapeHtml(it.note || "")}</td>
+        <td class="noPrint" style="text-align:right; white-space:nowrap">
+          <button class="btn ghost sm" data-edit-item="${escapeAttr(it.id)}" title="Rediger">Rediger</button></td>
+      </tr>
+    `).join("");
+
+    // Wire action buttons for this table
+    $("boxItemsTbody").querySelectorAll("button[data-edit-item]").forEach(btn => {
+      btn.addEventListener("click", () => openEditModal(btn.dataset.editItem));
+    });
+    $("boxItemsTbody").querySelectorAll("button[data-del-item]").forEach(btn => {
+      btn.addEventListener("click", () => deleteItemById(btn.dataset.delItem, boxNr));
+    });
+}
+
+  $("btnPrint").disabled = false;
+  msg("lookupMsg", `Viser ${items.length} vare(r).`, "ok");
+}
+
+function renderAll(){
+  renderProjectTitle();
+  renderSelects();
+  renderSideStats();
+  renderBoxesTable();
+  renderRoomsTable();
+  renderRecentItems();
+  setBoxCreatedNow();
+  $("boxNrPreview").value = "#" + nextBoxNr();
+  // Keep default quantity at 1 for new items
+  if ($("itemQty") && ($("itemQty").value === "" || $("itemQty").value === null)) $("itemQty").value = "1";
+  validateCreateBox();
+}
+
+function renderSideStats(){
+  $("nextBoxNr").textContent = "#" + nextBoxNr();
+  $("roomsCount").textContent = String(APP.data.rooms.length);
+  $("boxesCount").textContent = String(APP.data.boxes.length);
+  $("itemsCount").textContent = String(APP.data.items.length);
+}
+
+function renderSelects(){
+  // Rooms dropdown for creating a box
+  const roomSel = $("boxRoomSelect");
+  const selected = roomSel.value;
+  roomSel.innerHTML = `<option value="">— vælg rum —</option>` + APP.data.rooms
+    .slice()
+    .sort((a,b)=>a.name.localeCompare(b.name))
+    .map(r => `<option value="${escapeAttr(r.id)}">${escapeHtml(r.name)}</option>`)
+    .join("");
+  if (selected) roomSel.value = selected;
+
+  // Boxes dropdowns
+  const boxNrs = APP.data.boxes.map(b=>b.boxNr).sort((a,b)=>a-b);
+  fillBoxSelect($("itemBoxSelect"), boxNrs, $("itemBoxSelect").value);
+  fillBoxSelect($("lookupBoxSelect"), boxNrs, $("lookupBoxSelect").value);
+}
+
+function fillBoxSelect(sel, boxNrs, keepValue){
+  const current = keepValue || sel.value;
+  sel.innerHTML = `<option value="">— vælg kasse —</option>` + boxNrs.map(n => `<option value="${n}">#${n}</option>`).join("");
+  if (current) sel.value = current;
+}
+
+function renderBoxesTable(){
+  const tbody = $("recentBoxesTbody");
+  const rows = APP.data.boxes
+    .slice()
+    .sort((a,b)=> (b.boxNr||0) - (a.boxNr||0))
+    .slice(0, 10);
+
+  if (rows.length === 0){
+    tbody.innerHTML = `<tr><td colspan="4">Ingen kasser endnu.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map(b => {
+    const roomName = roomNameById(b.roomId) || "—";
+    return `<tr>
+      <td><a href="#" data-jump-box="${b.boxNr}">#${b.boxNr}</a></td>
+      <td>${escapeHtml(roomName)}</td>
+      <td>${escapeHtml(formatDate(b.createdAt))}</td>
+      <td>${escapeHtml(b.note || "")}</td>
+      <td class="noPrint" style="text-align:right; white-space:nowrap">
+        <button class="btn ghost sm" data-edit-box="${b.boxNr}" title="Rediger">Rediger</button></td>
+    </tr>`;
+  }).join("");
+
+  tbody.querySelectorAll("button[data-edit-box]").forEach(btn => {
+    btn.addEventListener("click", () => openBoxModal(parseInt(btn.dataset.editBox, 10)));
+  });
+  tbody.querySelectorAll("button[data-del-box]").forEach(btn => {
+    btn.addEventListener("click", () => deleteBoxByNr(parseInt(btn.dataset.delBox, 10)));
+  });
+
+  tbody.querySelectorAll("a[data-jump-box]").forEach(a => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      const nr = parseInt(a.dataset.jumpBox, 10);
+      jumpToBox(nr);
+    });
+  });
+}
+
+function renderRecentItems(){
+  const tbody = $("recentItemsTbody");
+  const rows = APP.data.items
+    .slice()
+    .sort((a,b)=> (b.createdAt||"").localeCompare(a.createdAt||""))
+    .slice(0, 12);
+
+  if (rows.length === 0){
+    tbody.innerHTML = `<tr><td colspan="6">Ingen varer endnu.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(it => `
+    <tr>
+      <td>${escapeHtml(formatDate(it.createdAt))}</td>
+      <td style="font-weight:900">${escapeHtml(it.name)}</td>
+      <td><a href="#" data-jump-box="${it.boxNr}">#${it.boxNr}</a></td>
+      <td>${escapeHtml(it.qty === "" ? "" : String(it.qty))}</td>
+      <td>${escapeHtml(it.unit || "")}</td>
+      <td>${escapeHtml(it.note || "")}</td>
+    </tr>
+  `).join("");
+
+  tbody.querySelectorAll("button[data-edit-box]").forEach(btn => {
+    btn.addEventListener("click", () => openBoxModal(parseInt(btn.dataset.editBox, 10)));
+  });
+  tbody.querySelectorAll("button[data-del-box]").forEach(btn => {
+    btn.addEventListener("click", () => deleteBoxByNr(parseInt(btn.dataset.delBox, 10)));
+  });
+
+  tbody.querySelectorAll("a[data-jump-box]").forEach(a => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      const nr = parseInt(a.dataset.jumpBox, 10);
+      jumpToBox(nr);
+    });
+  });
+}
+
+function renderRoomsTable(){
+  const tbody = $("roomsTbody");
+  const rooms = APP.data.rooms.slice().sort((a,b)=>a.name.localeCompare(b.name));
+  if (rooms.length === 0){
+    tbody.innerHTML = `<tr><td colspan="3">Ingen rum endnu.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rooms.map(r => {
+    const count = APP.data.boxes.filter(b => b.roomId === r.id).length;
+    const canDelete = count === 0;
+    return `<tr>
+      <td style="font-weight:900">${escapeHtml(r.name)}</td>
+      <td>${count}</td>
+      <td style="text-align:right">
+        <button class="btn ghost sm" data-edit-room="${escapeAttr(r.id)}" title="Rediger">Rediger</button>
+      </td>
+    </tr>`;
+  }).join("");
+
+  tbody.querySelectorAll("button[data-edit-room]").forEach(btn => {
+    btn.addEventListener("click", () => openRoomModal(btn.dataset.editRoom));
+  });
+
+}
+
+function roomNameById(id){
+  return APP.data.rooms.find(r => r.id === id)?.name;
+}
+
+function formatDate(iso){
+  if (!iso) return "";
+  try{
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return String(iso);
+    return d.toLocaleString();
+  } catch {
+    return String(iso);
+  }
+}
+
+
+
+// ---------- Room edit/delete ----------
+
+let EDITING_ROOM_ID = null;
+
+function openRoomModal(roomId){
+  msg("roomEditMsg", "");
+  const r = APP.data.rooms.find(x => x.id === roomId);
+  if (!r) return;
+  EDITING_ROOM_ID = roomId;
+  $("editRoomName").value = r.name || "";
+  // Enable/disable delete depending on usage
+  const used = APP.data.boxes.some(b => b.roomId === roomId);
+  $("btnDeleteRoomModal").disabled = used;
+  showModal("roomModal", true);
+  $("editRoomName").focus();
+}
+
+function saveRoomModal(){
+  msg("roomEditMsg", "");
+  if (!EDITING_ROOM_ID) return;
+  const name = normalizeName($("editRoomName").value);
+  if (!name){
+    msg("roomEditMsg", "Rumnavn må ikke være tomt.", "bad");
+    return;
+  }
+  const exists = APP.data.rooms.some(r => r.id !== EDITING_ROOM_ID && r.name.toLowerCase() === name.toLowerCase());
+  if (exists){
+    msg("roomEditMsg", "Der findes allerede et rum med det navn.", "warn");
+    return;
+  }
+  const r = APP.data.rooms.find(x => x.id === EDITING_ROOM_ID);
+  if (!r) return;
+  r.name = name;
+  queueServerSave();
+  renderAll();
+  msg("roomMsg", "Rum opdateret.", "ok");
+  closeRoomModal();
+}
+
+function deleteRoomModal(){
+  if (!EDITING_ROOM_ID) return;
+  const used = APP.data.boxes.some(b => b.roomId === EDITING_ROOM_ID);
+  if (used){
+    msg("roomEditMsg", "Kan ikke slette: rummet bruges af mindst én kasse.", "bad");
+    return;
+  }
+  const r = APP.data.rooms.find(x => x.id === EDITING_ROOM_ID);
+  if (!r) return;
+  if (!confirm(`Slet rummet “${r.name}”?`)) return;
+  APP.data.rooms = APP.data.rooms.filter(x => x.id !== EDITING_ROOM_ID);
+  queueServerSave();
+  renderAll();
+  msg("roomMsg", "Rum slettet.", "ok");
+  closeRoomModal();
+}
+
+function closeRoomModal(){
+  EDITING_ROOM_ID = null;
+  showModal("roomModal", false);
+}
+
+// ---------- Box edit/delete ----------
+
+let EDITING_BOX_NR = null;
+
+function openBoxModal(boxNr){
+  msg("boxEditMsg", "");
+  const b = APP.data.boxes.find(x => x.boxNr === boxNr);
+  if (!b) return;
+  EDITING_BOX_NR = boxNr;
+
+  $("editBoxNrLabel").textContent = "#" + boxNr;
+
+  // Fill room select
+  const sel = $("editBoxRoom");
+  sel.innerHTML = `<option value="">— vælg rum —</option>` + APP.data.rooms
+    .slice()
+    .sort((a,c)=>a.name.localeCompare(c.name))
+    .map(r => `<option value="${escapeAttr(r.id)}">${escapeHtml(r.name)}</option>`)
+    .join("");
+  sel.value = b.roomId || "";
+
+  $("editBoxNote").value = b.note || "";
+
+  showModal("boxModal", true);
+}
+
+function saveBoxModal(){
+  msg("boxEditMsg", "");
+  if (!Number.isFinite(EDITING_BOX_NR)) return;
+  const b = APP.data.boxes.find(x => x.boxNr === EDITING_BOX_NR);
+  if (!b) return;
+
+  const roomId = $("editBoxRoom").value;
+  if (!roomId){
+    msg("boxEditMsg", "Vælg et rum.", "bad");
+    return;
+  }
+  b.roomId = roomId;
+  b.note = normalizeName($("editBoxNote").value);
+
+  queueServerSave();
+  renderAll();
+
+  // Keep lookup view updated if currently showing this box
+  const currentBoxNr = parseInt($("lookupBoxNr").value, 10);
+  if (currentBoxNr === EDITING_BOX_NR) renderBoxLookup(currentBoxNr);
+
+  msg("boxMsg", `Kasse #${EDITING_BOX_NR} opdateret.`, "ok");
+  closeBoxModal();
+}
+
+function deleteBoxByNr(boxNr){
+  const b = APP.data.boxes.find(x => x.boxNr === boxNr);
+  if (!b) return;
+  const itemCount = APP.data.items.filter(i => i.boxNr === boxNr).length;
+  if (!confirm(`Slet kasse #${boxNr}?\n\nDette sletter også ${itemCount} vare(r) i kassen.`)) return;
+
+  APP.data.boxes = APP.data.boxes.filter(x => x.boxNr !== boxNr);
+  APP.data.items = APP.data.items.filter(i => i.boxNr !== boxNr);
+
+  queueServerSave();
+  renderAll();
+
+  // If viewing this box, clear lookup
+  const currentBoxNr = parseInt($("lookupBoxNr").value, 10);
+  if (currentBoxNr === boxNr) renderBoxLookup(null);
+
+  msg("boxMsg", `Kasse #${boxNr} slettet.`, "ok");
+}
+
+function deleteBoxModal(){
+  if (!Number.isFinite(EDITING_BOX_NR)) return;
+  deleteBoxByNr(EDITING_BOX_NR);
+  closeBoxModal();
+}
+
+function closeBoxModal(){
+  EDITING_BOX_NR = null;
+  showModal("boxModal", false);
+}
+
+// ---------- Generic modal helper ----------
+function showModal(id, show){
+  const overlay = $(id);
+  if (!overlay) return;
+  const card = overlay.querySelector(".modalCard");
+  overlay.classList.toggle("show", !!show);
+  overlay.setAttribute("aria-hidden", show ? "false" : "true");
+
+  // Close when clicking outside the modal card
+  overlay.onclick = (e) => {
+    if (e.target === overlay) showModal(id, false);
+  };
+
+  // Prevent clicks inside the modal from bubbling to overlay
+  if (card){
+    card.onclick = (e) => e.stopPropagation();
+  }
+}
+
+// ---------- Item edit/delete (box lookup) ----------
+
+let EDITING_ITEM_ID = null;
+
+function openEditModal(itemId){
+  msg("editMsg", "");
+  const it = APP.data.items.find(x => x.id === itemId);
+  if (!it){
+    msg("lookupMsg", "Kunne ikke finde varen.", "bad");
+    return;
+  }
+  EDITING_ITEM_ID = itemId;
+
+  $("editItemName").value = it.name || "";
+  $("editItemQty").value = (it.qty === "" || it.qty === null || it.qty === undefined) ? "" : String(it.qty);
+  $("editItemUnit").value = it.unit || "stk.";
+  $("editItemNote").value = it.note || "";
+
+  showEditModal(true);
+  $("editItemName").focus();
+}
+
+function showEditModal(show){
+  const el = $("editModal");
+  el.classList.toggle("show", !!show);
+  el.setAttribute("aria-hidden", show ? "false" : "true");
+}
+
+function closeEditModal(){
+  EDITING_ITEM_ID = null;
+  showEditModal(false);
+}
+
+function saveEditedItem(){
+  msg("editMsg", "");
+  if (!EDITING_ITEM_ID) return;
+
+  const name = normalizeName($("editItemName").value);
+  const qtyRaw = $("editItemQty").value;
+  const qty = qtyRaw === "" ? "" : parseFloat(qtyRaw);
+  const unit = $("editItemUnit").value;
+  const note = normalizeName($("editItemNote").value);
+
+  if (!name){
+    msg("editMsg", "Vare må ikke være tom.", "bad");
+    return;
+  }
+
+  const idx = APP.data.items.findIndex(x => x.id === EDITING_ITEM_ID);
+  if (idx < 0){
+    msg("editMsg", "Kunne ikke finde varen.", "bad");
+    return;
+  }
+
+  APP.data.items[idx] = {
+    ...APP.data.items[idx],
+    name,
+    qty,
+    unit,
+    note
+  };
+  queueServerSave();
+
+  msg("editMsg", "Gemt.", "ok");
+  renderAll();
+
+  // Keep the lookup view updated
+  const currentBoxNr = parseInt($("lookupBoxNr").value, 10);
+  if (Number.isFinite(currentBoxNr)) renderBoxLookup(currentBoxNr);
+
+  closeEditModal();
+}
+
+function deleteItemById(itemId, boxNr){
+  const it = APP.data.items.find(x => x.id === itemId);
+  if (!it) return;
+  if (!confirm(`Slet varen “${it.name}” fra kasse #${it.boxNr}?`)) return;
+
+  APP.data.items = APP.data.items.filter(x => x.id !== itemId);
+  queueServerSave();
+  renderAll();
+  if (Number.isFinite(boxNr)) renderBoxLookup(boxNr);
+  msg("lookupMsg", "Vare slettet.", "ok");
+}
+
+// ---------- Messaging ----------
+
+function msg(elId, text, cls){
+  const el = $(elId);
+  el.textContent = text || "";
+  el.classList.remove("ok","bad","warn");
+  if (cls) el.classList.add(cls);
+}
+
+// ---------- Persistence ----------
+
+// Server-only mode (MAMP): auto-load/save ./data.json via ./load.php and ./save.php.
+// This avoids browser file prompts and works from iPad/iPhone on the same network.
+
+async function loadFromServer(){
+  const applyData = (parsed) => {
+    APP.data = (typeof sanitizeData === "function") ? sanitizeData(parsed) : parsed;
+    if (!APP.data || typeof APP.data !== "object") APP.data = { version: 1, rooms: [], boxes: [], items: [] };
+    if (!Array.isArray(APP.data.rooms)) APP.data.rooms = [];
+    if (!Array.isArray(APP.data.boxes)) APP.data.boxes = [];
+    if (!Array.isArray(APP.data.items)) APP.data.items = [];
+  };
+
+  // 1) Prefer PHP endpoint (works with overwrite-save)
+  try{
+    const res = await fetch("./load.php", { cache: "no-store" });
+    if (!res.ok) throw new Error("load.php HTTP " + res.status);
+    const parsed = await res.json();
+    applyData(parsed);
+    setFileStatus("online", "ok");
+    setFilePathLabel("data.json (server)");
+    return;
+  } catch (e1){
+    console.warn("Server load via load.php failed", e1);
+  }
+
+  // 2) Fallback: try reading raw data.json directly (useful if PHP is not executed)
+  try{
+    const res = await fetch("./data.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("data.json HTTP " + res.status);
+    const parsed = await res.json();
+    applyData(parsed);
+    setFileStatus("online", "ok");
+    setFilePathLabel("data.json (direct)");
+    return;
+  } catch (e2){
+    console.warn("Server load via data.json failed", e2);
+  }
+
+  // 3) Final fallback: localStorage
+  try{
+    const fb = localStorage.getItem("flyttekasser_data_fallback");
+    if (fb){
+      applyData(JSON.parse(fb));
+      setFileStatus("offline", "warn");
+      setFilePathLabel("Offline (localStorage)");
+      return;
+    }
+  } catch {}
+
+  // No data anywhere -> empty state
+  APP.data = { version: APP.version, rooms: [], boxes: [], items: [] };
+  setFileStatus("offline", "warn");
+  setFilePathLabel("Kunne ikke hente data (tjek ./load.php eller ./data.json)");
+}
+
+function saveToLocalFallback(){
+  try{ localStorage.setItem("flyttekasser_data_fallback", JSON.stringify(APP.data)); }catch{}
+}
+
+let SAVE_TIMER = null;
+function queueServerSave(){
+  // Always keep local fallback
+  saveToLocalFallback();
+
+  // Debounce server writes
+  if (SAVE_TIMER) clearTimeout(SAVE_TIMER);
+  SAVE_TIMER = setTimeout(() => { saveToServer().catch(()=>{}); }, 400);
+}
+
+async function saveToServer(){
+  try{
+    const res = await fetch("./save.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(APP.data, null, 2)
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    setFileStatus("gemt", "ok");
+  } catch (e){
+    console.error("Server save failed", e);
+    setFileStatus("offline", "warn");
+  }
+}
+
+
+
+function setFileStatus(text, kind){
+  const el = $("fileStatus");
+  el.textContent = text;
+  el.classList.remove("ok","warn","bad");
+  if (kind) el.classList.add(kind);
+}
+
+function setFilePathLabel(label){
+  $("filePath").textContent = label;
+}
+
+async function pickOrCreateFile(){
+  msg("boxMsg",""); msg("itemMsg",""); msg("roomMsg",""); msg("searchMsg",""); msg("lookupMsg","");
+  // Chromium browsers: File System Access API
+  if (window.showOpenFilePicker && window.showSaveFilePicker){
+    const choice = await modalChoice(
+      "Vælg datafil",
+      "Vil du åbne en eksisterende JSON-fil, eller oprette en ny?",
+      [
+        { id:"open", label:"Åbn eksisterende" },
+        { id:"new",  label:"Opret ny" },
+        { id:"cancel", label:"Annullér" }
+      ]
+    );
+    if (choice === "cancel") return;
+
+    try{
+      if (choice === "open"){
+        const [handle] = await window.showOpenFilePicker({
+          types: [{ description: "JSON", accept: { "application/json": [".json"] } }],
+          multiple: false
+        });
+        APP.fileHandle = handle;
+        await loadFromPickedFile();
+        $("btnSave").disabled = false;
+        setFileStatus("åbnet", "ok");
+        setFilePathLabel(handle.name);
+        msg("boxMsg","Datafil indlæst.", "ok");
+      } else {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: APP.fileNameHint,
+          types: [{ description: "JSON", accept: { "application/json": [".json"] } }]
+        });
+        APP.fileHandle = handle;
+        await saveToPickedFile(); // writes initial
+        $("btnSave").disabled = false;
+        setFileStatus("klar", "ok");
+        setFilePathLabel(handle.name);
+        msg("boxMsg","Ny datafil oprettet og gemt.", "ok");
+      }
+    } catch (e){
+      console.error(e);
+      setFileStatus("fejl", "bad");
+      msg("boxMsg", "Kunne ikke åbne/gemme fil. Prøv igen.", "bad");
+    }
+    return;
+  }
+
+  // Fallback: no direct file writing. Explain + encourage export/import.
+  alert("Din browser understøtter ikke direkte at skrive til filer herfra.\n\nBrug i stedet:\n- Eksportér JSON (gem filen ved siden af HTML'en)\n- Importér JSON (indlæs filen igen senere)\n\nTip: Chrome/Edge giver den bedste 'Gem direkte i fil' oplevelse.");
+}
+
+async function loadFromPickedFile(){
+  if (!APP.fileHandle) throw new Error("No file handle.");
+  const file = await APP.fileHandle.getFile();
+  const text = await file.text();
+  const parsed = JSON.parse(text);
+  APP.data = sanitizeData(parsed);
+  renderAll();
+}
+
+async function saveToPickedFile(){
+  if (!APP.fileHandle){
+    setFileStatus("ikke valgt", "warn");
+    alert("Vælg/åbn en datafil først.");
+    return;
+  }
+  try{
+    const writable = await APP.fileHandle.createWritable();
+    await writable.write(JSON.stringify(APP.data, null, 2));
+    await writable.close();
+    setFileStatus("gemt", "ok");
+  } catch (e){
+    console.error(e);
+    setFileStatus("fejl", "bad");
+    alert("Kunne ikke gemme filen. Måske mangler der tilladelse?");
+  }
+}
+
+function exportJsonDownload(){
+  const blob = new Blob([JSON.stringify(APP.data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = APP.fileNameHint;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function importJsonFromFile(){
+  const input = $("importFile");
+  const file = input.files?.[0];
+  if (!file) return;
+  try{
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    APP.data = sanitizeData(parsed);
+    renderAll();
+    setFileStatus("importeret", "ok");
+    setFilePathLabel(file.name);
+    $("btnSave").disabled = true; // no handle in fallback mode
+    msg("boxMsg","Data importeret. Husk at eksportere for at gemme igen.", "ok");
+  } catch (e){
+    console.error(e);
+    alert("Kunne ikke importere JSON. Tjek at filen er korrekt.");
+  } finally {
+    input.value = "";
+  }
+}
+
+function sanitizeData(obj){
+  const safe = {
+    projectName: (typeof obj?.projectName === "string") ? obj.projectName : "",
+    version: APP.version,
+    rooms: Array.isArray(obj?.rooms) ? obj.rooms : [],
+    boxes: Array.isArray(obj?.boxes) ? obj.boxes : [],
+    items: Array.isArray(obj?.items) ? obj.items : []
+  };
+
+  // Basic normalization
+  safe.rooms = safe.rooms
+    .filter(r => r && typeof r.name === "string" && r.name.trim() !== "")
+    .map(r => ({ id: String(r.id || cryptoId()), name: normalizeName(r.name) }));
+
+  safe.boxes = safe.boxes
+    .filter(b => b && Number.isFinite(Number(b.boxNr)) && b.boxNr > 0)
+    .map(b => ({
+      id: String(b.id || cryptoId()),
+      boxNr: Number(b.boxNr),
+      roomId: String(b.roomId || ""),
+      createdAt: String(b.createdAt || new Date().toISOString()),
+      note: normalizeName(b.note || "")
+    }))
+    .sort((a,b)=>a.boxNr-b.boxNr);
+
+  safe.items = safe.items
+    .filter(it => it && typeof it.name === "string" && it.name.trim() !== "" && Number.isFinite(Number(it.boxNr)))
+    .map(it => ({
+      id: String(it.id || cryptoId()),
+      boxNr: Number(it.boxNr),
+      name: normalizeName(it.name),
+      qty: it.qty === "" ? "" : (it.qty === null || it.qty === undefined ? "" : Number(it.qty)),
+      unit: String(it.unit || "stk."),
+      note: normalizeName(it.note || ""),
+      createdAt: String(it.createdAt || new Date().toISOString())
+    }));
+
+  // Drop boxes with unknown roomId (optional: keep but mark)
+  const roomIds = new Set(safe.rooms.map(r=>r.id));
+  safe.boxes = safe.boxes.map(b => roomIds.has(b.roomId) ? b : ({...b, roomId:""}));
+
+  safe.projectName = String(safe.projectName || "").trim();
+  return safe;
+}
+
+// ---------- Small modal choice (no external deps) ----------
+
+function modalChoice(title, text, options){
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.style.position = "fixed";
+    overlay.style.inset = "0";
+    overlay.style.background = "rgba(0,0,0,.55)";
+    overlay.style.display = "grid";
+    overlay.style.placeItems = "center";
+    overlay.style.zIndex = "9999";
+
+    const card = document.createElement("div");
+    card.style.width = "min(520px, 92vw)";
+    card.style.borderRadius = "18px";
+    card.style.border = "1px solid rgba(255,255,255,.10)";
+    card.style.background = "rgba(17,26,43,.92)";
+    card.style.boxShadow = "0 18px 55px rgba(0,0,0,.45)";
+    card.style.padding = "14px";
+
+    const h = document.createElement("div");
+    h.style.fontWeight = "900";
+    h.style.marginBottom = "8px";
+    h.textContent = title;
+
+    const p = document.createElement("div");
+    p.style.color = "rgba(168,179,216,.95)";
+    p.style.fontSize = "13px";
+    p.style.marginBottom = "12px";
+    p.textContent = text;
+
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.gap = "10px";
+    row.style.justifyContent = "flex-end";
+    row.style.flexWrap = "wrap";
+
+    options.forEach(opt => {
+      const b = document.createElement("button");
+      b.className = "btn " + (opt.id === "cancel" ? "ghost" : "");
+      b.textContent = opt.label;
+      b.addEventListener("click", () => {
+        overlay.remove();
+        resolve(opt.id);
+      });
+      row.appendChild(b);
+    });
+
+    card.appendChild(h); card.appendChild(p); card.appendChild(row);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay){
+        overlay.remove();
+        resolve("cancel");
+      }
+    });
+  });
+}
+
+// ---------- Utils ----------
+
+function escapeHtml(str){
+  return String(str ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+function escapeAttr(str){
+  return escapeHtml(str).replaceAll("`","&#096;");
+}
+function cryptoId(){
+  // Prefer crypto.randomUUID when available
+  if (crypto?.randomUUID) return crypto.randomUUID();
+  return "id-" + Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
+}
+
+// ---------- Project title ----------
+function renderProjectTitle(){
+  const sub = $("projectSubtitle");
+  const name = (APP.data && typeof APP.data.projectName === "string") ? APP.data.projectName.trim() : "";
+  if (sub) sub.textContent = name ? name : "Ingen projekt valgt";
+  if (typeof updateProjectUI === "function") updateProjectUI();
+}
+
+
+// ---------- Project UI ----------
+function updateProjectUI(){
+  const name = (APP.data && typeof APP.data.projectName === "string") ? APP.data.projectName.trim() : "";
+  const setup = $("projectSetupCard");
+  const info = $("projectInfoCard");
+  const display = $("projectDisplayText");
+  const inline = $("btnEditProjectInline");
+  const topBtn = $("btnEditProjectTop");
+if (display) display.textContent = name || "";
+  if (setup) setup.classList.toggle("hidden", !!name);
+  if (info) info.classList.toggle("hidden", !name);
+  if (inline) inline.classList.toggle("hidden", !name);
+  if (topBtn) topBtn.classList.toggle("hidden", !name);
+}
+
+function openProjectModal(){
+  msg("projectEditMsg", "");
+  if ($("editProjectName")) $("editProjectName").value = (APP.data.projectName || "");
+  showModal("projectModal", true);
+  $("editProjectName") && $("editProjectName").focus();
+}
+
+function closeProjectModal(){
+  showModal("projectModal", false);
+}
+
+function saveProjectModal(){
+  msg("projectEditMsg", "");
+  APP.data.projectName = ($("editProjectName").value || "").trim();
+  queueServerSave();
+  renderProjectTitle();
+  updateProjectUI();
+  closeProjectModal();
+}
+</script>
+</body>
+</html>
