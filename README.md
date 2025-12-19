@@ -27,7 +27,7 @@ Nedenfor ses eksempler på brugen af appen.
 
 ### Print / PDF
 ![Print](docs/screenshots/print_eksempel.png)
-![Print2]docs/screenshots/print2_eksempel.png
+![Print2](docs/screenshots/print2_eksempel.png)
 
 > Tip: App'en kan også bruges på tablets og telefoner.
 
