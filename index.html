@@ -20,6 +20,7 @@
 
 
 
+
     :root{
       --bg:#0b1220;
       --panel:#0f1726;
@@ -429,6 +430,52 @@
       display:none !important;
     }
     
+
+    .printHeader{display:none}
+    .printFooter{display:none}
+    .printBody{ }
+    @media print{
+      /* page margins */
+      @page { margin: 18mm 10mm 16mm; }
+      .printHeader{
+        display:flex !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 8mm 10mm 4mm;
+        border-bottom: 1px solid rgba(0,0,0,.18);
+        align-items: flex-end;
+        justify-content: space-between;
+        font-weight: 900;
+      }
+      .printHeader .phLeft{font-size: 14pt;}
+      .printHeader .phRight{font-size: 10pt; font-weight: 700;}
+      .printFooter{
+        display:flex !important;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 3mm 10mm 6mm;
+        border-top: 1px solid rgba(0,0,0,.18);
+        justify-content: center;
+        font-size: 9pt;
+      }
+      /* Try page counters where supported */
+      .pageNumbers::before{ content: "Side " counter(page) " af " counter(pages); }
+      .printBody{
+        margin-top: 22mm;
+        margin-bottom: 16mm;
+      }
+      /* Better table wrapping */
+      table{width:100%}
+      td, th{word-break: break-word;}
+      tr{break-inside: avoid;}
+      .printSection{page-break-before: always;}
+      .printSection:first-child{page-break-before: auto;}
+    }
+    
 </style>
 </head>
 <body>
@@ -722,6 +769,7 @@
               <div class="row span2" style="justify-content:flex-end; align-items:flex-end">
                 <button id="btnLookup" class="btn">Vis</button>
                 <button id="btnPrint" class="btn ghost" disabled>Print / Gem som PDF</button>
+              <button id="btnPrintAll" class="btn ghost noPrint" type="button">Print alle</button>
               </div>
             </div>
 
@@ -729,9 +777,14 @@
           </div>
 
           <div class="card" id="printCard">
-            <div class="printOnly" style="margin-bottom:10px">
-              <div style="font-weight:900; font-size:16px">Flyttekasse – Indhold</div>
-              <div style="color:var(--muted); font-size:12px">Udskrift genereret: <span id="printGeneratedAt"></span></div>
+            <div id="printHeader" class="printHeader printOnly">
+              <div id="printProjectName" class="phLeft"></div>
+              <div class="phRight">Genereret: <span id="printGeneratedAt"></span></div>
+            </div>
+            <div id="printFooter" class="printFooter printprintOnly printOnly">
+              <span class="pageNumbers"></span>
+            </div>
+            <div id="printBody" class="printBody"><div style="color:var(--muted); font-size:12px">Udskrift genereret: <span id="printGeneratedAt"></span></div>
             </div>
 
             <h2 id="boxHeader">Ingen kasse valgt</h2>
@@ -962,6 +1015,7 @@
  */
 
 const APP = {
+  ui: { currentLookupBoxNr: null, printSingleTemplate: null },
   version: 1,
   data: {
     version: 1,
@@ -1076,7 +1130,8 @@ function showView(viewId){
   // Refresh relevant dropdowns when switching
   renderSelects();
   if (viewId === "boxLookup") {
-    $("printGeneratedAt").textContent = new Date().toLocaleString();
+    $("printGeneratedAt").textContent = formatDateTime(new Date());
+  if ($("printProjectName")) $("printProjectName").textContent = (APP.data.projectName || "").trim();
   }
 }
 
@@ -1142,7 +1197,8 @@ function wireForms(){
     $("lookupBoxNr").value = v ? v : "";
   });
 
-  $("btnPrint").addEventListener("click", () => window.print());
+  $("btnPrint").addEventListener("click", printSingle);
+  if ($("btnPrintAll")) $("btnPrintAll").addEventListener("click", printAllBoxes);
   // Project settings
   if ($("btnEditProjectInline")) $("btnEditProjectInline").addEventListener("click", openProjectModal);
   if ($("btnEditProjectTop")) $("btnEditProjectTop").addEventListener("click", openProjectModal);
@@ -1308,6 +1364,7 @@ function addItem(){
     msg("itemMsg", "Vælg en flyttekasse.", "bad");
     return;
   }
+  APP.ui.currentLookupBoxNr = boxNr;
   const box = APP.data.boxes.find(b => b.boxNr === boxNr);
   if (!box){
     msg("itemMsg", "Kassen findes ikke. Opret den først.", "bad");
@@ -1419,7 +1476,8 @@ function renderBoxLookup(boxNr){
   $("boxRoom").textContent = roomName;
   $("boxCreated").textContent = created;
   $("boxNoteOut").textContent = note;
-  $("printGeneratedAt").textContent = new Date().toLocaleString();
+  $("printGeneratedAt").textContent = formatDateTime(new Date());
+  if ($("printProjectName")) $("printProjectName").textContent = (APP.data.projectName || "").trim();
 
   const items = APP.data.items
     .filter(it => it.boxNr === boxNr)
@@ -2249,6 +2307,104 @@ function saveProjectModal(){
   renderProjectTitle();
   updateProjectUI();
   closeProjectModal();
+}
+
+function formatDateTime(dt){
+  const d = dt instanceof Date ? dt : new Date(dt);
+  const pad = (n) => String(n).padStart(2,"0");
+  return `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function buildBoxSectionHTML(box){
+  const boxNr = box.boxNr;
+  const roomName = roomNameById(box.roomId) || "—";
+  const created = formatDate(box.createdAt);
+  const note = box.note ? box.note : "—";
+
+  const items = APP.data.items
+    .filter(it => it.boxNr === boxNr)
+    .sort((a,b)=> (b.createdAt||"").localeCompare(a.createdAt||""));
+
+  const rows = items.length === 0
+    ? `<tr><td colspan="4">Ingen indhold i denne kasse.</td></tr>`
+    : items.map(it => `
+        <tr>
+          <td style="font-weight:900">${escapeHtml(it.name)}</td>
+          <td>${escapeHtml(it.qty === "" ? "" : String(it.qty))}</td>
+          <td>${escapeHtml(it.unit || "")}</td>
+          <td>${escapeHtml(it.note || "")}</td>
+        </tr>
+      `).join("");
+
+  return `
+    <div class="printSection">
+      <h2 style="margin:0 0 10px 0">Flyttekasse #${boxNr}</h2>
+      <div class="kpi" style="margin-bottom:12px">
+        <span class="pill">Rum: <b>${escapeHtml(roomName)}</b></span>
+        <span class="pill">Oprettet: <b>${escapeHtml(created)}</b></span>
+        <span class="pill">Note: <b>${escapeHtml(note)}</b></span>
+      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Vare</th>
+            <th style="width:70px">Antal</th>
+            <th style="width:70px">Enhed</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function doPrintWithTitle(title){
+  const old = document.title;
+  document.title = title;
+  // Some browsers need a tick
+  setTimeout(() => window.print(), 0);
+  // Restore title after print dialog
+  const restore = () => {
+    document.title = old;
+    window.removeEventListener("afterprint", restore);
+  };
+  window.addEventListener("afterprint", restore);
+}
+
+function printSingle(){
+  const boxNr = APP.ui.currentLookupBoxNr;
+  if (!Number.isFinite(boxNr) || boxNr <= 0) return;
+  const proj = (APP.data.projectName || "").trim();
+  if ($("printProjectName")) $("printProjectName").textContent = proj;
+  $("printGeneratedAt").textContent = formatDateTime(new Date());
+  doPrintWithTitle(`Flyttekasse #${boxNr}`);
+}
+
+function printAllBoxes(){
+  const body = $("printBody");
+  if (!body) return;
+  // Save template once
+  if (!APP.ui.printSingleTemplate) APP.ui.printSingleTemplate = body.innerHTML;
+
+  const proj = (APP.data.projectName || "").trim();
+  if ($("printProjectName")) $("printProjectName").textContent = proj;
+  $("printGeneratedAt").textContent = formatDateTime(new Date());
+
+  const boxes = [...APP.data.boxes].sort((a,b)=>a.boxNr-b.boxNr);
+  body.innerHTML = boxes.map(buildBoxSectionHTML).join("");
+
+  doPrintWithTitle(proj ? proj : "Flyttekasse projekt");
+
+  // Restore after print
+  const restore = () => {
+    body.innerHTML = APP.ui.printSingleTemplate;
+    window.removeEventListener("afterprint", restore);
+    // Re-render current box view
+    const cur = APP.ui.currentLookupBoxNr;
+    if (Number.isFinite(cur)) renderBoxLookup(cur);
+  };
+  window.addEventListener("afterprint", restore);
 }
 </script>
 </body>
