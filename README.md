@@ -18,7 +18,7 @@ Appen er lavet til at køre “server-only” på et simpelt lokalt webserver-se
 ## Struktur
 
 ```
-flyttekasser/
+flyttekasse/
   index.html
   data.json
   load.php
@@ -33,26 +33,25 @@ flyttekasser/
 ## Kom i gang med MAMP (macOS)
 
 1. Installer og start **MAMP** (kun Apache er nødvendig)
-2. Kopiér mappen `flyttekasser` til:
+2. Gå til `/Applications/MAMP/htdocs/`
+3. Lav en ny mappe `flyttekasse`
 
-   `/Applications/MAMP/htdocs/`
+4. Åbn i browser:
 
-3. Åbn i browser:
-
-   `http://localhost:8888/flyttekasser/`
+   `http://localhost:8888/flyttekasse/`
 
 ### Test af endpoints
 
-- `http://localhost:8888/flyttekasser/load.php`
-- `http://localhost:8888/flyttekasser/data.json`
+- `http://localhost:8888/flyttekasse/load.php`
+- `http://localhost:8888/flyttekasse/data.json`
 
 ## Åbn på iPhone/iPad på samme netværk
 
-1. Find din Macs lokale IP-adresse (fx `192.168.1.23`)
+1. Find din Macs lokale IP-adresse (fx `192.168.1.1`)
 2. Sørg for at MAMP/Apache kører
 3. Åbn på mobilen:
 
-   `http://<DIN_IP>:8888/flyttekasser/`
+   `http://<DIN_IP>:8888/flyttekasse/`
 
 > Tip: macOS firewall kan blokere. Tillad indgående forbindelser til Apache/MAMP hvis nødvendigt.
 
@@ -70,12 +69,10 @@ I browserens print-dialog kan du vælge **Gem som PDF**.
 - `boxes[]` (id + boxNr + roomId + createdAt + note)
 - `items[]` (id + boxNr + name + qty + unit + note + createdAt)
 
-## GitHub forslag
-
-- Tilføj en licensfil (fx **MIT**) som `LICENSE`
-- Overvej at tilføje et screenshot i `README.md` (fx `docs/screenshot.png`)
-- Brug GitHub Releases hvis du vil distribuere zip-filer
-
 ## Licens
 
-Vælg selv en licens (fx MIT) og tilføj `LICENSE` fil, hvis du deler projektet offentligt.
+Dette projekt er licenseret under MIT License.
+
+Se filen `LICENSE` for fulde licensbetingelser.
+
+Du er velkommen til at bruge, modificere og distribuere projektet frit, så længe licensteksten bevares.
