@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="favicon.png" alt="Flyttekasse styring logo" width="120">
+  <img src="favicon.png" alt="Flyttekasse styring logo" width="200">
 </p>
 
 # Flyttekasse styring
