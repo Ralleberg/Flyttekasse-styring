@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/screenshots/favicon.png" alt="Flyttekasse styring logo" width="120">
+</p>
+
 # Flyttekasse styring
 
 En lille web-app til at holde styr på flyttekasser, rum og indhold – med søgning og en print-/PDF-venlig oversigt pr. flyttekasse eller samlet for hele projektet.
