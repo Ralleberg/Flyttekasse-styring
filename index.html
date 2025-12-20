@@ -4,6 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Flyttekasser</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
   <style>
 
 
@@ -733,6 +735,7 @@
               </label>
               <div class="row" style="align-items:flex-end">
                 <button id="btnCreateBox" class="btn" disabled>Opret kasse</button>
+              <button id="btnPrintBoxOverview" class="btn ghost" type="button">Print kasseoversigt</button>
                 <button id="btnGotoRooms" class="btn ghost">Opret rum…</button>
               </div>
             </div>
@@ -905,6 +908,7 @@
                 <button id="btnLookup" class="btn">Vis</button>
                 <button id="btnPrint" class="btn ghost" disabled>Print / Gem som PDF</button>
               <button id="btnPrintAll" class="btn ghost noPrint" type="button">Print alle</button>
+              <button id="btnPrintBoxOverview2" class="btn ghost noPrint" type="button">Kasseoversigt</button>
               </div>
             </div>
 
@@ -1341,6 +1345,8 @@ function wireForms(){
 
   $("btnPrint").addEventListener("click", printSingle);
   if ($("btnPrintAll")) $("btnPrintAll").addEventListener("click", printAllBoxes);
+  if ($("btnPrintBoxOverview2")) $("btnPrintBoxOverview2").addEventListener("click", printBoxesOverview);
+  if ($("btnPrintBoxOverview")) $("btnPrintBoxOverview").addEventListener("click", printBoxesOverview);
   // Project settings
   if ($("btnEditProjectInline")) $("btnEditProjectInline").addEventListener("click", openProjectModal);
   if ($("btnEditProjectTop")) $("btnEditProjectTop").addEventListener("click", openProjectModal);
@@ -2582,6 +2588,60 @@ function fillBoxSelectOptions(selectEl, selectedBoxNr){
     const sel = (Number(b.boxNr) === Number(selectedBoxNr)) ? " selected" : "";
     return `<option value="${b.boxNr}"${sel}>${escapeHtml(label)}</option>`;
   }).join("");
+}
+
+function buildBoxesOverviewHTML(){
+  const roomName = (roomId) => (APP.data.rooms.find(r=>r.id===roomId)?.name || "—");
+  const rows = [...APP.data.boxes].sort((a,b)=>a.boxNr-b.boxNr).map(b => `
+    <tr>
+      <td style="font-weight:900">#${b.boxNr}</td>
+      <td>${escapeHtml(roomName(b.roomId))}</td>
+      <td>${escapeHtml(formatDate(b.createdAt))}</td>
+      <td>${escapeHtml(b.note || "")}</td>
+    </tr>
+  `).join("");
+
+  const empty = `<tr><td colspan="4">Ingen flyttekasser endnu.</td></tr>`;
+
+  return `
+    <div class="printSection" style="page-break-before:auto; break-before:auto">
+      <h2 style="margin:0 0 10px 0">Flyttekasser – oversigt</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th style="width:90px">Kasse</th>
+            <th style="width:180px">Rum</th>
+            <th style="width:140px">Oprettet</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody>${rows || empty}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function printBoxesOverview(){
+  const body = $("printBody");
+  if (!body) return;
+  if (!APP.ui.printSingleTemplate) APP.ui.printSingleTemplate = body.innerHTML;
+
+  const proj = (APP.data.projectName || "").trim();
+  if ($("printProjectName")) $("printProjectName").textContent = proj;
+  $("printGeneratedAt").textContent = formatDateTime(new Date());
+
+  body.innerHTML = buildBoxesOverviewHTML();
+
+  doPrintWithTitle("Flyttekasser – oversigt");
+
+  const restore = () => {
+    body.innerHTML = APP.ui.printSingleTemplate;
+    window.removeEventListener("afterprint", restore);
+    const sel = $("lookupBoxSelect");
+    const cur = sel && sel.value ? parseInt(sel.value, 10) : APP.ui.currentLookupBoxNr;
+    if (Number.isFinite(cur) && cur>0) renderBoxLookup(cur);
+  };
+  window.addEventListener("afterprint", restore);
 }
 </script>
 </body>
