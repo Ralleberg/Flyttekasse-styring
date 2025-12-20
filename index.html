@@ -1019,6 +1019,12 @@
           Vare *
           <input id="editItemName" type="text" />
         </label>
+
+        <label class="span3">
+          Flyttekasse:
+          <select id="editItemBoxNr"></select>
+        </label>
+
         <label>
           Antal
           <input id="editItemQty" type="number" min="0" step="1" />
@@ -1729,6 +1735,7 @@ function renderBoxesTable(){
   });
 }
 
+
 function renderRecentItems(){
   const tbody = $("recentItemsTbody");
   const rows = APP.data.items
@@ -1737,7 +1744,7 @@ function renderRecentItems(){
     .slice(0, 12);
 
   if (rows.length === 0){
-    tbody.innerHTML = `<tr><td colspan="6">Ingen varer endnu.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7">Ingen varer endnu.</td></tr>`;
     return;
   }
 
@@ -1746,20 +1753,20 @@ function renderRecentItems(){
       <td>${escapeHtml(formatDate(it.createdAt))}</td>
       <td style="font-weight:900">${escapeHtml(it.name)}</td>
       <td><a href="#" data-jump-box="${it.boxNr}">#${it.boxNr}</a></td>
-      <td>${escapeHtml(it.qty === "" ? "" : String(it.qty))}</td>
+      <td>${escapeHtml(it.qty === "" || it.qty === null || it.qty === undefined ? "" : String(it.qty))}</td>
       <td>${escapeHtml(it.unit || "")}</td>
       <td>${escapeHtml(it.note || "")}</td>
+      <td class="noPrint" style="width:110px; text-align:right">
+        <button class="btn tiny" type="button" data-edit-item="${it.id}">Rediger</button>
+      </td>
     </tr>
   `).join("");
 
-  tbody.querySelectorAll("button[data-edit-box]").forEach(btn => {
-    btn.addEventListener("click", () => openBoxModal(parseInt(btn.dataset.editBox, 10)));
-  });
-  tbody.querySelectorAll("button[data-del-box]").forEach(btn => {
-    btn.addEventListener("click", () => deleteBoxByNr(parseInt(btn.dataset.delBox, 10)));
+  tbody.querySelectorAll('button[data-edit-item]').forEach(btn => {
+    btn.addEventListener("click", () => openEditModal(btn.dataset.editItem));
   });
 
-  tbody.querySelectorAll("a[data-jump-box]").forEach(a => {
+  tbody.querySelectorAll('a[data-jump-box]').forEach(a => {
     a.addEventListener("click", (e) => {
       e.preventDefault();
       const nr = parseInt(a.dataset.jumpBox, 10);
@@ -1767,6 +1774,7 @@ function renderRecentItems(){
     });
   });
 }
+
 
 function renderRoomsTable(){
   const tbody = $("roomsTbody");
@@ -1990,7 +1998,12 @@ function openEditModal(itemId){
   $("editItemUnit").value = it.unit || "stk.";
   $("editItemNote").value = it.note || "";
 
-  showEditModal(true);
+  
+  // Box move
+  const curBoxNr = Number(it.boxNr);
+  if ($("editItemBoxNrCurrent")) $("editItemBoxNrCurrent").textContent = `#${curBoxNr}`;
+  fillBoxSelectOptions($("editItemBoxNr"), curBoxNr);
+showEditModal(true);
   $("editItemName").focus();
 }
 
@@ -2015,7 +2028,9 @@ function saveEditedItem(){
   const unit = $("editItemUnit").value;
   const note = normalizeName($("editItemNote").value);
 
-  if (!name){
+  
+  const newBoxNr = Number($("editItemBoxNr") ? $("editItemBoxNr").value : NaN);
+if (!name){
     msg("editMsg", "Vare må ikke være tom.", "bad");
     return;
   }
@@ -2032,6 +2047,8 @@ function saveEditedItem(){
     qty,
     unit,
     note
+  ,
+    boxNr: (Number.isFinite(newBoxNr) && newBoxNr > 0) ? newBoxNr : APP.data.items[idx].boxNr
   };
   queueServerSave();
 
@@ -2554,6 +2571,17 @@ function printAllBoxes(){
     if (Number.isFinite(cur) && cur>0) renderBoxLookup(cur);
   };
   window.addEventListener("afterprint", restore);
+}
+
+function fillBoxSelectOptions(selectEl, selectedBoxNr){
+  if (!selectEl) return;
+  const boxes = [...APP.data.boxes].sort((a,b)=>a.boxNr-b.boxNr);
+  const roomName = (roomId) => (APP.data.rooms.find(r=>r.id===roomId)?.name || "—");
+  selectEl.innerHTML = boxes.map(b => {
+    const label = `#${b.boxNr} · ${roomName(b.roomId)}`;
+    const sel = (Number(b.boxNr) === Number(selectedBoxNr)) ? " selected" : "";
+    return `<option value="${b.boxNr}"${sel}>${escapeHtml(label)}</option>`;
+  }).join("");
 }
 </script>
 </body>
