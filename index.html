@@ -635,6 +635,7 @@
       <div class="row">
         <button id="btnPickFile" class="btn">Vælg/åbn…</button>
         <button id="btnSave" class="btn ghost" disabled>Gem</button>
+        <span id="saveStatus" class="msg" style="margin-left:8px"></span>
       </div>
       <div class="row">
         <button id="btnExport" class="btn ghost">Eksportér JSON</button>
@@ -643,6 +644,8 @@
       </div>
       <div class="hint">Tip: i Chrome/Edge kan “Gem” skrive direkte i filen. I Safari/Firefox bruges eksport/import.</div>
     </div>
+
+    <div id="syncMsg" class="msg"></div>
 
     <nav class="nav">
       <button data-view="boxes" class="active">1) Flyttekasse <small>Opret</small></button>
@@ -953,7 +956,7 @@
 
             </div><!-- /printBody -->
 
-            <div class="hint noPrint"" style="margin-top:10px">
+            <div class="hint noPrint" style="margin-top:10px">
               Tip: I print-dialogen kan du vælge “Gem som PDF”.
             </div>
           </div>
@@ -1196,6 +1199,7 @@ async function init(){
     updateProjectUI();
     renderAll();
     setBoxCreatedNow();
+    startAutoRefresh();
   } catch (e){
     console.error(e);
     try{
@@ -1287,11 +1291,34 @@ function wireFileButtons(){
   const save = $("btnSave");
   if (pick){
     pick.disabled = true;
-    pick.addEventListener("click", () => alert("Server-mode: data gemmes automatisk i data.json via MAMP."));
+    pick.addEventListener("click", () => alert("Server-mode: data gemmes automatisk i data.json på serveren (LXC/Apache)."));
   }
   if (save){
-    save.disabled = true;
+    save.disabled = false;
     save.addEventListener("click", () => alert("Server-mode: der gemmes automatisk. Brug eksport hvis du vil lave backup."));
+// Manual save button: show inline status (green "Gemt" on success)
+save.addEventListener("click", async () => {
+  const status = document.getElementById("saveStatus");
+  if (status){
+    status.textContent = "Gemmer…";
+    status.className = "msg warn";
+  }
+  try{
+    await saveToServer();
+    if (status){
+      status.textContent = "Gemt";
+      status.className = "msg ok";
+      setTimeout(() => { status.textContent = ""; status.className = "msg"; }, 2000);
+    }
+  } catch (e){
+    console.error(e);
+    if (status){
+      status.textContent = "Fejl ved gemning";
+      status.className = "msg bad";
+    }
+  }
+});
+
   }
 
   $("btnExport").addEventListener("click", exportJsonDownload);
@@ -2161,19 +2188,101 @@ function queueServerSave(){
 }
 
 async function saveToServer(){
+  const res = await fetch("./save.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(APP.data, null, 2)
+  });
+
+  if (!res.ok){
+    throw new Error("HTTP " + res.status);
+  }
+
+  setFileStatus("gemt", "ok");
+  return true;
+}
+// ---------- Auto refresh (phone -> computer sync) ----------
+// Poll data.json for changes and refresh without interrupting typing.
+
+function isUserTyping(){
+  const a = document.activeElement;
+  if (!a) return false;
+  const tag = a.tagName;
+  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || a.isContentEditable;
+}
+
+function setSyncMsg(text, cls){
+  const el = document.getElementById("syncMsg");
+  if (!el) return;
+  el.textContent = text || "";
+  el.classList.remove("ok","bad","warn");
+  if (cls) el.classList.add(cls);
+}
+
+let LAST_SEEN_MOD = null;
+let PENDING_REFRESH = false;
+let REFRESH_TIMER = null;
+
+async function fetchLastModified(){
+  const res = await fetch("./data.json", { method: "HEAD", cache: "no-store" });
+  if (!res.ok) throw new Error("HEAD data.json HTTP " + res.status);
+  return res.headers.get("Last-Modified");
+}
+
+async function applyServerRefreshIfSafe(force = false){
+  if (!force && isUserTyping()){
+    PENDING_REFRESH = true;
+    setSyncMsg("Ny data klar – opdaterer når du er færdig…", "warn");
+    return;
+  }
+
+  const activeBtn = document.querySelector(".nav button.active");
+  const currentView = activeBtn?.dataset?.view || "boxes";
+
   try{
-    const res = await fetch("./save.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(APP.data, null, 2)
-    });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    setFileStatus("gemt", "ok");
+    await loadFromServer();
+    renderAll();
+    showView(currentView);
+
+    PENDING_REFRESH = false;
+    setSyncMsg("Opdateret fra anden enhed", "ok");
+    setTimeout(() => setSyncMsg("", ""), 2000);
   } catch (e){
-    console.error("Server save failed", e);
-    setFileStatus("offline", "warn");
+    console.error("Auto refresh failed", e);
+    setSyncMsg("Kunne ikke opdatere lige nu", "bad");
   }
 }
+
+function startAutoRefresh(){
+  if (REFRESH_TIMER) clearInterval(REFRESH_TIMER);
+
+  REFRESH_TIMER = setInterval(async () => {
+    try{
+      const lm = await fetchLastModified();
+      if (!lm) return;
+
+      if (LAST_SEEN_MOD === null){
+        LAST_SEEN_MOD = lm;
+        return;
+      }
+
+      if (lm !== LAST_SEEN_MOD){
+        LAST_SEEN_MOD = lm;
+        await applyServerRefreshIfSafe(false);
+      }
+    } catch (e){
+      // Silent retry; avoid UI spam on transient issues.
+    }
+  }, 2000);
+}
+
+document.addEventListener("focusout", () => {
+  if (PENDING_REFRESH && !isUserTyping()){
+    applyServerRefreshIfSafe(true);
+  }
+});
+
+
 
 
 

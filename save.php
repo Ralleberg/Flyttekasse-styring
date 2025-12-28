@@ -1,11 +1,25 @@
 <?php
-header('Content-Type: application/json; charset=utf-8');
-$file = __DIR__ . '/data.json';
-$data = file_get_contents('php://input');
-if ($data === false || strlen($data) === 0) {
-  http_response_code(400);
-  echo json_encode(["error"=>"No data received"]);
-  exit;
+// save.php
+
+header("Content-Type: text/plain");
+
+// Read raw JSON input
+$data = file_get_contents("php://input");
+
+if ($data === false || trim($data) === "") {
+    http_response_code(400);
+    exit("No data received");
 }
-file_put_contents($file, $data, LOCK_EX);
-echo json_encode(["status"=>"ok"]);
+
+// Absolute path to data.json (IMPORTANT on Linux)
+$file = __DIR__ . "/data.json";
+
+// Write JSON to file
+$result = file_put_contents($file, $data);
+
+if ($result === false) {
+    http_response_code(500);
+    exit("Could not write file");
+}
+
+echo "OK";
