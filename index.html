@@ -140,12 +140,21 @@
       backdrop-filter: blur(10px);
       z-index: 5;
     }
-    .topbar .left{display:flex; flex-direction:column; gap:2px}
-    .topTitle{font-weight:900; letter-spacing:.2px}
-    .topSub{color:var(--muted); font-size:12px}
     .topbar .right{display:flex; gap:10px; align-items:center}
-    #btnToggleMenu{display:none}
-    @media (max-width: 920px){ #btnToggleMenu{display:inline-flex} }
+
+    #btnToggleMenu{
+      display:none;
+      width:42px;
+      height:42px;
+      padding:0;
+      font-size:34px;          /* gør ☰-ikonet stort */
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    @media (max-width: 920px){
+      #btnToggleMenu{display:flex}
+    }
     .btn{
       height:38px; padding:0 14px;
       border-radius: 12px;
@@ -222,6 +231,7 @@
 
     .main{padding:16px; overflow:auto}
     .grid{display:grid; grid-template-columns: 1fr 1fr; gap:14px}
+    .grid.stack{grid-template-columns: 1fr}
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       border:1px solid rgba(255,255,255,.08);
@@ -713,7 +723,7 @@
 
 
 <section id="view-boxes" class="view">
-        <div class="grid">
+        <div class="grid stack">
           <div class="card">
             <h2>Opret ny flyttekasse</h2>
             <div class="hint">Rum skal vælges, ellers kan kassen ikke oprettes.</div>
@@ -772,7 +782,7 @@
 
       <!-- View: Items -->
       <section id="view-items" class="view" style="display:none">
-        <div class="grid">
+        <div class="grid stack">
           <div class="card">
             <h2>Tilføj indhold</h2>
             <div class="hint">Tilføj en vare til en flyttekasse.</div>
@@ -845,7 +855,7 @@
 
       <!-- View: Search -->
       <section id="view-search" class="view" style="display:none">
-        <div class="grid">
+        <div class="grid stack">
           <div class="card">
             <h2>Søg efter vare</h2>
             <div class="hint">Søg på tekst og se hvilke flyttekasser der indeholder varen.</div>
@@ -1370,6 +1380,15 @@ function wireForms(){
   });
 
   $("btnSearch").addEventListener("click", runSearch);
+
+  // Enter i søgefelt = søg
+  $("searchText").addEventListener("keyup", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      runSearch();
+    }
+  });
+
   $("btnClearSearch").addEventListener("click", () => {
     $("searchText").value = "";
     $("searchResultsTbody").innerHTML = `<tr><td colspan="3">Søg for at se resultater.</td></tr>`;
