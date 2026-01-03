@@ -4,96 +4,86 @@
 
 # Flyttekasse styring
 
-En lille web-app til at holde styr på flyttekasser, rum og indhold – med søgning og en print-/PDF-venlig oversigt pr. flyttekasse eller samlet for hele projektet.
+En lille web-app til at holde styr på flyttekasser, rum og indhold under en flytning.
+Appen giver en enkel og overskuelig måde at registrere, hvad der ligger i hvilke kasser – både pr. rum og på tværs af hele projektet.
 
-Appen er lavet til at køre “server-only” på et simpelt lokalt webserver-setup (fx MAMP), så data kan gemmes stabilt i en `data.json` ved siden af appen.
+Appen er lavet til at køre “server-only” på et simpelt lokalt webmiljø, så data kan gemmes stabilt i en `data.json` ved siden af appen.
+
+---
 
 ## Funktioner
 
 - Opret **Rum**
-- Opret **Flyttekasser** (autonummerering) med rum, dato og note
-- Opret **Indhold** (varer) med antal + enhed (stk., kg., sæt, pk.) og note
-- **Søg** efter varer og se hvilke kasser de ligger i
-- **Slå kasse op** og se indhold i en liste
-- **Rediger/Slet** rum, flyttekasser og varer
-- **Print / Gem som PDF** med pæn opsætning
-- **Projekt**: indtast projektnavn/adresse (vises i toppen og på print)
+- Opret **Flyttekasser** med automatisk nummerering
+- Opret **Indhold / varer** med antal og enhed (stk., kg., sæt, pk.)
+- Tilføj noter til både kasser og varer
+- **Søg** efter varer og se præcis hvilken kasse og hvilket rum de ligger i
+- Vis oversigt:
+  - pr. rum
+  - pr. flyttekasse
+  - samlet for hele projektet
+- Hurtig navigation mellem kasser og indhold
+- Automatisk gemning af ændringer
 
-## Screenshots
+---
 
-Nedenfor ses eksempler på brugen af appen.
+## Nye og udvidede features
 
-### Opret flyttekasse
-![Opret flyttekasse](docs/screenshots/flyttekasse_eksempel.png)
+- **Understøtter flere enheder samtidig**
+  Appen kan bruges fra flere enheder på samme tid (fx telefon, tablet og computer), uden at man forstyrrer hinandens arbejde.
 
-### Indhold i flyttekasse
-![Indhold](docs/screenshots/indhold_eksempel.png)
+- **Live synkronisering**
+  Ændringer lavet på én enhed bliver automatisk opdateret på de andre, uden at afbryde igangværende indtastning.
 
-### Print / PDF
-![Print](docs/screenshots/print_eksempel.png)
-![Print2](docs/screenshots/print2_eksempel.png)
+- **Server-side håndtering af flyttekasser**
+  - Flyttekasser oprettes server-side for at sikre, at kassenumre altid er unikke – også når flere enheder bruges samtidigt.
+  - Flyttekasser slettes server-side, så kassenumre kan genbruges, hvis en kasse fjernes.
 
-> Tip: App'en kan også bruges på tablets og telefoner.
+- **Konfliktsikring**
+  - Appen opdager, hvis data er blevet ændret fra en anden enhed
+  - Lister og oversigter opdateres automatisk uden at nulstille formularer
 
-## Struktur
+---
 
-```
+## Projektstruktur
+
 flyttekasse/
   index.html
   data.json
   load.php
   save.php
+  storage.php
+  create_box.php
+  reserve_box.php
+  delete_box.php
   README.md
-```
 
-- `data.json` er den eneste datafil.
-- `load.php` læser `data.json`
-- `save.php` overskriver `data.json` ved ændringer (autosave)
+---
 
-## Kom i gang med MAMP (macOS)
+## Kom i gang
 
-1. Installer og start **MAMP** (kun Apache er nødvendig)
-2. Kopiér mappen `flyttekasse` til:
+### Krav
+- En webserver med **PHP**
+- Ingen database er nødvendig
 
-   `/Applications/MAMP/htdocs/`
+### Kørsel med MAMP
+1. Kopiér projektmappen til `htdocs`
+2. Start MAMP
+3. Åbn i browseren:
+   http://localhost/flyttekasse/
 
-3. Åbn i browser:
+### Kørsel med LAMP
+Appen fungerer også uden problemer på et klassisk **LAMP-setup** (Linux, Apache, PHP).
+Ingen database er nødvendig.
 
-   `http://localhost:8888/flyttekasse/`
+### Andre setups
+Appen kan også køres via:
+- XAMPP
+- Docker (Apache + PHP)
+- Andre lokale eller interne webservere, der kan afvikle HTML og PHP
 
-### Test af endpoints
+Det vigtigste er, at PHP har skriveadgang til `data.json`.
 
-- `http://localhost:8888/flyttekasse/load.php`
-- `http://localhost:8888/flyttekasse/data.json`
+---
 
-## Åbn på iPhone/iPad på samme netværk
-
-1. Find din Macs lokale IP-adresse (fx `192.168.1.23`)
-2. Sørg for at MAMP/Apache kører
-3. Åbn på mobilen:
-
-   `http://<DIN_IP>:8888/flyttekasse/`
-
-> Tip: macOS firewall kan blokere. Tillad indgående forbindelser til Apache/MAMP hvis nødvendigt.
-
-## Print / PDF
-
-På siden “Opslag/Print” kan du vælge en kasse og trykke **Print**.
-I browserens print-dialog kan du vælge **Gem som PDF**.
-
-## Dataformat
-
-`data.json` indeholder:
-
-- `projectName` (string)
-- `rooms[]` (id + name)
-- `boxes[]` (id + boxNr + roomId + createdAt + note)
-- `items[]` (id + boxNr + name + qty + unit + note + createdAt)
-
-## Licens
-
-Dette projekt er licenseret under MIT License.
-
-Se filen `LICENSE` for fulde licensbetingelser.
-
-Du er velkommen til at bruge, modificere og distribuere projektet frit, så længe licensteksten bevares.
+God flytning 📦🚚
