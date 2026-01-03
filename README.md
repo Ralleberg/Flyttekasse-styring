@@ -27,6 +27,24 @@ Appen er lavet til at køre “server-only” på et simpelt lokalt webmiljø, s
 
 ---
 
+## Screenshots
+
+Nedenfor ses eksempler på brugen af appen.
+
+### Opret flyttekasse
+![Opret flyttekasse](docs/screenshots/flyttekasse_eksempel.png)
+
+### Indhold i flyttekasse
+![Indhold](docs/screenshots/indhold_eksempel.png)
+
+### Print / PDF
+![Print](docs/screenshots/print_eksempel.png)
+![Print2](docs/screenshots/print2_eksempel.png)
+
+> Tip: App'en kan også bruges på tablets og telefoner.
+
+---
+
 ## Nye og udvidede features
 
 - **Understøtter flere enheder samtidig**
@@ -42,6 +60,23 @@ Appen er lavet til at køre “server-only” på et simpelt lokalt webmiljø, s
 - **Konfliktsikring**
   - Appen opdager, hvis data er blevet ændret fra en anden enhed
   - Lister og oversigter opdateres automatisk uden at nulstille formularer
+
+---
+
+## Struktur
+
+```
+flyttekasse/
+  index.html
+  data.json
+  load.php
+  save.php
+  storage.php
+  create_box.php
+  reserve_box.php
+  delete_box.php
+  README.md
+```
 
 ---
 
