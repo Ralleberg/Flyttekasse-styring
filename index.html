@@ -2794,3 +2794,53 @@ function printBoxesOverview(){
 </script>
 </body>
 </html>
+
+
+async function deleteBoxByNr(boxNr){
+  const b = APP.data.boxes.find(x => x.boxNr === boxNr);
+  if (!b) return;
+
+  const itemCount = APP.data.items.filter(i => i.boxNr === boxNr).length;
+  if (!confirm(`Slet kasse #${boxNr}?\n\nDette sletter også ${itemCount} vare(r) i kassen.`)) return;
+
+  try{
+    const res = await fetch("./delete_box.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Client-Id": String(APP.clientId || "")
+      },
+      body: JSON.stringify({ boxNr }, null, 2)
+    });
+
+    if (!res.ok){
+      const t = await res.text();
+      throw new Error("delete_box.php HTTP " + res.status + " " + t);
+    }
+
+    const j = await res.json();
+
+    APP.data.boxes = APP.data.boxes.filter(x => x.boxNr !== boxNr);
+    APP.data.items = APP.data.items.filter(i => i.boxNr !== boxNr);
+
+    if (Number.isFinite(Number(j?.rev))){
+      APP.data.rev = Number(j.rev);
+      APP.ui.lastSeenRev = APP.data.rev;
+    }
+    if (Number.isFinite(Number(j?.nextBoxNr))){
+      APP.ui.nextBoxNrCached = Number(j.nextBoxNr);
+    }else{
+      refreshNextBoxNrFromServer();
+    }
+
+    renderAll();
+
+    const currentBoxNr = parseInt($("lookupBoxNr").value, 10);
+    if (currentBoxNr === boxNr) renderBoxLookup(null);
+
+    msg("boxMsg", `Kasse #${boxNr} slettet.`, "ok");
+  }catch(e){
+    console.warn(e);
+    msg("boxMsg", "Kunne ikke slette kasse (tjek forbindelse/server).", "bad");
+  }
+}
