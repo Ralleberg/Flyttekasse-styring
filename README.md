@@ -45,21 +45,6 @@ Appen er lavet til at køre “server-only” på et simpelt lokalt webmiljø, s
 
 ---
 
-## Projektstruktur
-
-flyttekasse/
-  index.html
-  data.json
-  load.php
-  save.php
-  storage.php
-  create_box.php
-  reserve_box.php
-  delete_box.php
-  README.md
-
----
-
 ## Kom i gang
 
 ### Krav
