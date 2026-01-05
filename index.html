@@ -294,11 +294,49 @@
     .kpi{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
     .divider{height:1px; background: rgba(255,255,255,.08); margin:12px 0}
 
-    /* Print (screen defaults). Actual print rules live in the dedicated <style id="printStyles" media="print"> block. */
+    /* Print */
     .printOnly{display:none}
-    .printHeader{display:none}
-    .printFooter{display:none}
-    .printBody{ }
+    @media print{
+      /* Keep print clean but readable; do NOT affect on-screen colors (print only). */
+      @page{ margin: 12mm; }
+
+      body{background:#fff !important; color:#111827 !important}
+
+      .app{display:block; height:auto}
+      .sidebar,.topbar,.noPrint,.overlay{display:none !important}
+      .main{padding:0; margin:0}
+
+      /* Only the print card should appear */
+      #view-boxLookup .grid{display:block}
+      #view-boxLookup .grid > .card:first-child{display:none !important}
+      #printCard{
+        margin:0 !important;
+        padding:0 !important;
+        border:none !important;
+        box-shadow:none !important;
+        border-radius:0 !important;
+        background:#fff !important;
+      }
+      .printOnly{display:block !important}
+
+      /* Full-width table with wrapping */
+      #printCard .tableWrap{overflow:visible !important; border:1px solid #e5e7eb !important; background:#fff !important}
+      #printCard table{width:100% !important; min-width:0 !important; table-layout:fixed !important}
+      #printCard th{
+        background:#f3f4f6 !important;
+        color:#374151 !important;
+        position:static !important;
+      }
+      #printCard th, #printCard td{
+        border-bottom:1px solid #e5e7eb !important;
+        white-space:normal !important;
+        word-break:break-word !important;
+        overflow-wrap:anywhere !important;
+        hyphens:auto;
+      }
+      /* Hide action column in print, just in case */
+      #printCard .noPrint{display:none !important}
+    }
 
     /* Mobile drawer */
     .overlay{
@@ -526,22 +564,10 @@
     font-weight: 700 !important;
   }
 
-  @page { margin: 18mm 10mm 16mm; }
+  @page { margin: 14mm 10mm 14mm; }
 
   /* Print: show ONLY box lookup print card */
   .noPrint{ display:none !important; }
-
-  /* Print isolation: ensure ONLY the print card content is rendered */
-  body *{ visibility:hidden !important; }
-  #printCard, #printCard *{ visibility:visible !important; }
-  #printCard{ position: relative !important; }
-
-  /* Prevent an extra blank page in some browsers */
-  html, body{ height:auto !important; min-height:0 !important; }
-  .app, .main, .content, .contentInner{ height:auto !important; min-height:0 !important; }
-  #printCard{ height:auto !important; min-height:0 !important; margin:0 !important; }
-  #printCard *{ break-after:auto; page-break-after:auto; }
-  .card{ break-inside: avoid !important; }
 
   aside.sidebar{ display:none !important; }
   main.main{ margin:0 !important; padding:0 !important; }
@@ -568,35 +594,14 @@
   #printHeader .phLeft{ font-size: 14pt !important; font-weight: 900 !important; }
   #printHeader .phRight{ font-size: 10pt !important; font-weight: 700 !important; }
 
-  /* Prevent header from growing in height (wrap) which can overlap the body in single-box print */
-  #printHeader{
-    flex-wrap: nowrap !important;
-    overflow: hidden !important;
-  }
-  #printHeader .phLeft{
-    max-width: 75% !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    line-height: 1.05 !important;
-  }
-  #printHeader .phRight{
-    white-space: nowrap !important;
-    line-height: 1.05 !important;
-  }
-
-  /* Footer hidden (avoid browser-specific page counter issues like 0 of 0) */
+  /* Footer removed (avoid 0 of 0 and browser inconsistencies) */
   #printFooter{ display:none !important; }
 
   /* Body spacing under header */
   #printBody{
-    /* Slightly larger offset to guarantee clearance under fixed header */
-    margin-top: 20mm !important;
+    margin-top: 16mm !important;
     padding: 0 10mm 0 !important;
   }
-
-  /* Box title spacing (keep clear of the fixed header) */
-  #printBody h2{ margin-top: 0 !important; }
 
   /* Tables */
   #printCard .tableWrap{ overflow: visible !important; }
