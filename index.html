@@ -594,12 +594,30 @@
   #printHeader .phLeft{ font-size: 14pt !important; font-weight: 900 !important; }
   #printHeader .phRight{ font-size: 10pt !important; font-weight: 700 !important; }
 
+  /* Prevent header from growing in height (wrap) which can overlap the body in single-box print */
+  #printHeader{
+    flex-wrap: nowrap !important;
+    overflow: hidden !important;
+  }
+  #printHeader .phLeft{
+    max-width: 75% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.05 !important;
+  }
+  #printHeader .phRight{
+    white-space: nowrap !important;
+    line-height: 1.05 !important;
+  }
+
   /* Footer removed (avoid 0 of 0 and browser inconsistencies) */
   #printFooter{ display:none !important; }
 
   /* Body spacing under header */
   #printBody{
-    margin-top: 16mm !important;
+    /* Slightly larger offset to guarantee clearance under fixed header */
+    margin-top: 20mm !important;
     padding: 0 10mm 0 !important;
   }
 
